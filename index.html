@@ -487,6 +487,65 @@
 
     <script>
         // Sample data
+
+
+async function loadDashboardData() {
+    const container = document.getElementById('todayAppointments');
+    container.innerHTML = '<p class="text-center text-gray-500">กำลังโหลดข้อมูลนัดหมาย...</p>';
+
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            redirect: 'follow',
+            body: JSON.stringify({ action: 'getTodaysAppointments' })
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+            container.innerHTML = ''; // ล้างข้อความ "กำลังโหลด"
+            if (result.data.length > 0) {
+                result.data.forEach(app => {
+                    const statusColor = app.status === 'ฉีดแล้ว' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800';
+
+                    const appointmentCard = document.createElement('div');
+                    appointmentCard.className = 'flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200';
+                    appointmentCard.innerHTML = `
+                        <div>
+                            <p class="font-medium text-blue-800">${app.name}</p>
+                            <p class="text-sm text-blue-600">${app.phone || 'ไม่มีเบอร์โทร'}</p>
+                            <p class="text-sm text-gray-600">${app.vaccine}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-2 py-1 text-xs rounded-full ${statusColor}">
+                                ${app.status}
+                            </span>
+                        </div>
+                    `;
+                    container.appendChild(appointmentCard);
+                });
+            } else {
+                container.innerHTML = '<p class="text-center text-gray-500">วันนี้ไม่มีนัดหมาย</p>';
+            }
+        } else {
+            throw new Error(result.error || 'ไม่สามารถโหลดข้อมูลได้');
+        }
+    } catch (error) {
+        console.error('Dashboard Load Error:', error);
+        container.innerHTML = `<p class="text-center text-red-500">เกิดข้อผิดพลาด: ${error.message}</p>`;
+    }
+}
+
+
+
+
+
+
+
+        
         let patients = [
             {
                 id: '1234567890123',
@@ -515,7 +574,7 @@
         ];
 
 
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOYNihlodsDKyVOVoqOzGzz2QonOfdya9yBLjXSjzHnmPDMNK-Wl2hQu5seay-QSsL/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbJqVN5TeMYE02VK2Z3BaMkbQu7j-MNUvp4X1PPUv98Abt5E4Yzuy9NxKtocyfk2Fa/exec';
         let vaccineDatesArray = [];
         let appointmentDatesArray = [];
         let currentUserRole = '';
@@ -656,24 +715,24 @@ function logout() {
 
         // Tab functionality
 function showTab(tabName) {
-    // ซ่อน content ทั้งหมด
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.add('hidden');
-    });
-    
-    // รีเซ็ตสไตล์ของปุ่มทั้งหมดให้เป็นสถานะ "ไม่ถูกเลือก"
+    // ... (โค้ดส่วนบนของฟังก์ชันนี้ยังคงเดิม) ...
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
     document.querySelectorAll('.tab-button').forEach(tab => {
         tab.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
         tab.classList.add('text-gray-600');
     });
     
-    // แสดง content ที่เลือก
     document.getElementById(tabName + 'Content').classList.remove('hidden');
     
-    // ตั้งค่าสไตล์ให้ปุ่มที่ถูกเลือก
     const activeTab = document.getElementById(tabName + 'Tab');
     activeTab.classList.remove('text-gray-600');
     activeTab.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+
+    // **[เพิ่มส่วนนี้เข้าไป]**
+    // ถ้าผู้ใช้คลิกที่แท็บแดชบอร์ด ให้โหลดข้อมูล
+    if (tabName === 'dashboard') {
+        loadDashboardData();
+    }
 }
 
         // Search patient function (อัพเดทใหม่ - รองรับ Google Sheets)
@@ -692,7 +751,7 @@ function showTab(tabName) {
             
             try {
                 // ค้นหาจาก Google Sheets ก่อน
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOYNihlodsDKyVOVoqOzGzz2QonOfdya9yBLjXSjzHnmPDMNK-Wl2hQu5seay-QSsL/exec';
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbJqVN5TeMYE02VK2Z3BaMkbQu7j-MNUvp4X1PPUv98Abt5E4Yzuy9NxKtocyfk2Fa/exec';
                 
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -1145,7 +1204,7 @@ function showTab(tabName) {
                 }));
                 
                 // Google Apps Script Web App URL
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOYNihlodsDKyVOVoqOzGzz2QonOfdya9yBLjXSjzHnmPDMNK-Wl2hQu5seay-QSsL/exec';
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbJqVN5TeMYE02VK2Z3BaMkbQu7j-MNUvp4X1PPUv98Abt5E4Yzuy9NxKtocyfk2Fa/exec';
                 
                 for (const appointment of appointments) {
                     const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -1236,7 +1295,7 @@ function showTab(tabName) {
                 }));
                 
                 // Google Apps Script Web App URL from your existing code
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOYNihlodsDKyVOVoqOzGzz2QonOfdya9yBLjXSjzHnmPDMNK-Wl2hQu5seay-QSsL/exec';
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbJqVN5TeMYE02VK2Z3BaMkbQu7j-MNUvp4X1PPUv98Abt5E4Yzuy9NxKtocyfk2Fa/exec';
                 
                 for (const record of vaccineRecords) {
                     const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -1316,6 +1375,7 @@ function showTab(tabName) {
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d03cb227b975d8',t:'MTc1NDgzNjcwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
