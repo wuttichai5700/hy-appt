@@ -515,7 +515,7 @@
         ];
 
 
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTAU2HwCstXDOl2lurXS2_IQQ9Ifj_6VqCclW_EmIyTsRQhWSccwX3o_U_HD2kHqMP/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCzjoYm1x4x9O8HYUW5yDsYqjuJwamw-v-sKiN1Vp_KHL3ckLYIxdEklZGNV7U-rEr/exec';
         let vaccineDatesArray = [];
         let appointmentDatesArray = [];
         let currentUserRole = '';
@@ -532,7 +532,7 @@
 
     const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
     // แปลงปี ค.ศ. เป็น พ.ศ. โดยการบวก 543
-    return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${date.getFullYear() }`;
+    return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${date.getFullYear() +543 }`;
 }
 
         // Initialize
@@ -679,7 +679,7 @@ function showTab(tabName) {
             
             try {
                 // ค้นหาจาก Google Sheets ก่อน
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTAU2HwCstXDOl2lurXS2_IQQ9Ifj_6VqCclW_EmIyTsRQhWSccwX3o_U_HD2kHqMP/exec';
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCzjoYm1x4x9O8HYUW5yDsYqjuJwamw-v-sKiN1Vp_KHL3ckLYIxdEklZGNV7U-rEr/exec';
                 
                 const response = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
@@ -1131,7 +1131,7 @@ function showTab(tabName) {
                 }));
                 
                 // Google Apps Script Web App URL
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTAU2HwCstXDOl2lurXS2_IQQ9Ifj_6VqCclW_EmIyTsRQhWSccwX3o_U_HD2kHqMP/exec';
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCzjoYm1x4x9O8HYUW5yDsYqjuJwamw-v-sKiN1Vp_KHL3ckLYIxdEklZGNV7U-rEr/exec';
                 
                 for (const appointment of appointments) {
                     const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -1222,7 +1222,7 @@ function showTab(tabName) {
                 }));
                 
                 // Google Apps Script Web App URL from your existing code
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTAU2HwCstXDOl2lurXS2_IQQ9Ifj_6VqCclW_EmIyTsRQhWSccwX3o_U_HD2kHqMP/exec';
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCzjoYm1x4x9O8HYUW5yDsYqjuJwamw-v-sKiN1Vp_KHL3ckLYIxdEklZGNV7U-rEr/exec';
                 
                 for (const record of vaccineRecords) {
                     const response = await fetch(GOOGLE_SCRIPT_URL, {
@@ -1302,6 +1302,7 @@ function showTab(tabName) {
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d03cb227b975d8',t:'MTc1NDgzNjcwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
