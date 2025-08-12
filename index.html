@@ -574,7 +574,7 @@ async function loadDashboardData() {
         ]; 
 
 
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzz5uDUralGhIFL76nDjju3ocCewR2_XABCQUqBQTwxa8_XAiQtIKZzM9UB2bFlYfDE/exec'; 
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz30kIk2NnCX2tjUiSV54u0aQvrlvYCtZNpGb9J0vdEwqewUhE98MuwPNtXAuPAQrvf/exec'; 
         let vaccineDatesArray = []; 
         let appointmentDatesArray = []; 
         let currentUserRole = ''; 
@@ -751,7 +751,7 @@ function showTab(tabName) {
              
             try { 
                 // ค้นหาจาก Google Sheets ก่อน 
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzz5uDUralGhIFL76nDjju3ocCewR2_XABCQUqBQTwxa8_XAiQtIKZzM9UB2bFlYfDE/exec'; 
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz30kIk2NnCX2tjUiSV54u0aQvrlvYCtZNpGb9J0vdEwqewUhE98MuwPNtXAuPAQrvf/exec'; 
                  
                 const response = await fetch(GOOGLE_SCRIPT_URL, { 
                     method: 'POST', 
@@ -1204,7 +1204,7 @@ function showTab(tabName) {
                 })); 
                  
                 // Google Apps Script Web App URL 
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzz5uDUralGhIFL76nDjju3ocCewR2_XABCQUqBQTwxa8_XAiQtIKZzM9UB2bFlYfDE/exec'; 
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz30kIk2NnCX2tjUiSV54u0aQvrlvYCtZNpGb9J0vdEwqewUhE98MuwPNtXAuPAQrvf/exec'; 
                  
                 for (const appointment of appointments) { 
                     const response = await fetch(GOOGLE_SCRIPT_URL, { 
@@ -1295,7 +1295,7 @@ function showTab(tabName) {
                 })); 
                  
                 // Google Apps Script Web App URL from your existing code 
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzz5uDUralGhIFL76nDjju3ocCewR2_XABCQUqBQTwxa8_XAiQtIKZzM9UB2bFlYfDE/exec'; 
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz30kIk2NnCX2tjUiSV54u0aQvrlvYCtZNpGb9J0vdEwqewUhE98MuwPNtXAuPAQrvf/exec'; 
                  
                 for (const record of vaccineRecords) { 
                     const response = await fetch(GOOGLE_SCRIPT_URL, { 
@@ -1375,5 +1375,6 @@ function showTab(tabName) {
     </script> 
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d03cb227b975d8',t:'MTc1NDgzNjcwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body> 
 </html>
+
 
 
