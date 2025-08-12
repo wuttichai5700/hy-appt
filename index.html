@@ -763,8 +763,7 @@ function showTab(tabName) {
 
 
 
-        // ฟังก์ชันแสดงข้อมูลผู้ป่วย
-       function displayPatientInfo(patientData) {
+   function displayPatientInfo(patientData) {
     document.getElementById('patientName').textContent = patientData.name;
     document.getElementById('patientPhone').textContent = patientData.phone;
 
@@ -772,12 +771,22 @@ function showTab(tabName) {
     const appointmentTableContainer = document.getElementById('appointmentTableContainer');
     appointmentTableContainer.innerHTML = ''; // ล้างข้อมูลเก่า
 
+    // [FIX] สร้างฟังก์ชันตัวช่วยเพื่อแปลงวันที่เป็น YYYY-MM-DD โดยใช้มาตรฐาน UTC
+    const getUTCDateString = (dateInput) => {
+        if (!dateInput) return null;
+        const d = new Date(dateInput);
+        if (isNaN(d.getTime())) return null;
+        
+        const year = d.getUTCFullYear();
+        const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    };
+
     // สร้าง Set ของวันที่ฉีดจริง (ในรูปแบบ YYYY-MM-DD) เพื่อการเปรียบเทียบที่รวดเร็ว
     const vaccinationDates = new Set(
-        (patientData.history || []).map(record => {
-            const d = new Date(record.date); // Google Sheets ส่งค่าวันที่มาเป็น ISO String ซึ่ง Date object อ่านได้โดยตรง
-            return !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : null;
-        }).filter(Boolean) // คัดกรองค่าที่ผิดพลาดออก
+        (patientData.history || []).map(record => getUTCDateString(record.date)).filter(Boolean)
     );
 
     if (patientData.appointments && patientData.appointments.length > 0) {
@@ -800,8 +809,7 @@ function showTab(tabName) {
         // วนลูปสร้างแต่ละแถวของตารางนัดหมาย
         patientData.appointments.forEach(app => {
             const appDate = new Date(app.date);
-            appDate.setHours(0, 0, 0, 0);
-            const appDateString = appDate.toISOString().split('T')[0];
+            const appDateString = getUTCDateString(app.date); // ใช้ฟังก์ชันใหม่
 
             let statusText = '';
             let statusColorClass = '';
@@ -859,13 +867,6 @@ function showTab(tabName) {
     
     document.getElementById('patientInfo').classList.remove('hidden');
 }
-
-
-
-
-
-
-
 
 
 
@@ -1315,6 +1316,7 @@ function showTab(tabName) {
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d03cb227b975d8',t:'MTc1NDgzNjcwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
