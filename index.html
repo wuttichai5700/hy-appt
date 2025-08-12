@@ -1,1381 +1,1063 @@
-<!DOCTYPE html> 
-<html lang="th"> 
-<head> 
-    <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>ระบบลงทะเบียนวัคซีน - Demo</title> 
-    <script src="https://cdn.tailwindcss.com"></script> 
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet"> 
-    <style> 
-        body { font-family: 'Sarabun', sans-serif; } 
-        .demo-badge { 
-            position: fixed; 
-            top: 10px; 
-            right: 10px; 
-            background: #ef4444; 
-            color: white; 
-            padding: 8px 16px; 
-            border-radius: 20px; 
-            font-size: 14px; 
-            font-weight: 600; 
-            z-index: 1000; 
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); 
-        } 
-        .admin-only { 
-            display: none; 
-        } 
-        .admin-only.show { 
-            display: block; 
-        } 
-    </style> 
-</head> 
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen"> 
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบลงทะเบียนวัคซีน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; 
+        }
+        
+        .admin-only { display: none; }
+        .admin-only.show { display: block; }
+
+        /* Styles for printing appointment card */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-container, #print-container * {
+                visibility: visible;
+            }
+            #print-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            @page {
+                size: A5 portrait;
+                margin: 0;
+            }
+            #print-card {
+                width: 150mm;
+                height: 210mm;
+                padding: 5mm;
+                box-sizing: border-box;
+                font-family: 'Sarabun', sans-serif;
+                border: none; /* Changed from border: 1px solid #ccc */
+                display: flex;
+                flex-direction: column;
+                font-size: 14px; /* Added to control print font size */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+
+    <!-- Login Page -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">ระบบลงทะเบียนวัคซีน</h1>
+                <p class="text-gray-600">สำหรับเจ้าหน้าที่และพยาบาล</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="กรอกชื่อผู้ใช้">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน</label>
+                    <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="กรอกรหัสผ่าน">
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200">
+                    เข้าสู่ระบบ
+                </button>
+            </form>
+            
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600 mb-2"><strong>Demo Accounts:</strong></p>
+                <p class="text-xs text-gray-500">👨‍⚕️ พยาบาล: nurse1 / password123</p>
+                <p class="text-xs text-gray-500">👩‍💼 แอดมิน: admin1 / admin123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="mainSystem" class="hidden">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-800">ระบบลงทะเบียนวัคซีน</h1>
+                            <p class="text-sm text-gray-600" id="userRole">พยาบาล</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600" id="currentDate"></span>
+                        <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-200">
+                            ออกจากระบบ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="py-4">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-blue-200 rounded-xl p-1 flex justify-center w-fit mx-auto shadow-inner">
+                    <nav class="flex items-center gap-x-1">
+                        <button onclick="showTab('search')" id="searchTab" class="tab-button whitespace-nowrap py-2 px-4 text-sm font-medium rounded-lg bg-white text-blue-600 shadow-sm">🔍 ค้นหาผู้ป่วย</button>
+                        <button onclick="showTab('register')" id="registerTab" class="tab-button whitespace-nowrap py-2 px-4 text-sm font-medium rounded-lg text-gray-600 hover:bg-white hover:text-blue-600">📝 ลงทะเบียนข้อมูล</button>
+                        <button onclick="showTab('appointment')" id="appointmentTab" class="tab-button whitespace-nowrap py-2 px-4 text-sm font-medium rounded-lg text-gray-600 hover:bg-white hover:text-blue-600 admin-only">📅 ลงทะเบียนนัดหมาย</button>
+                        <button onclick="showTab('dashboard')" id="dashboardTab" class="tab-button whitespace-nowrap py-2 px-4 text-sm font-medium rounded-lg text-gray-600 hover:bg-white hover:text-blue-600 admin-only">📊 แดชบอร์ด</button>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Search Patient Tab -->
+            <div id="searchContent" class="tab-content">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">🔍 ค้นหาข้อมูลผู้ป่วย</h2>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">เลขบัตรประชาชน</label>
+                        <div class="flex space-x-4">
+                            <input type="text" id="searchId" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกเลขบัตรประชาชน 13 หลัก" maxlength="13">
+                            <button onclick="searchPatient()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200">
+                                ค้นหา
+                            </button>
+                        </div>
+                    </div>
+                    <div id="patientInfo" class="hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                            <h3 class="text-lg font-semibold text-green-800 mb-4">ข้อมูลผู้ป่วย</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-600">ชื่อ-นามสกุล</p>
+                                    <p class="font-medium" id="patientName"></p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">เบอร์โทรศัพท์</p>
+                                    <p class="font-medium" id="patientPhone"></p>
+                                </div>
+                                <div class="col-span-1 md:col-span-2">
+                                    <h4 class="font-semibold text-gray-800 mb-2">ตารางนัดหมาย</h4>
+                                    <div id="appointmentTableContainer">
+                                        <!-- Appointment table will be generated here -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6">
+                                <h4 class="font-semibold text-gray-800 mb-3">ประวัติการฉีดวัคซีน</h4>
+                                <div class="space-y-2" id="vaccineHistory">
+                                    <!-- Vaccine history will be generated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointment Registration Tab -->
+            <div id="appointmentContent" class="tab-content hidden">
+                 <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📅 ลงทะเบียนนัดหมาย (สำหรับแอดมิน)</h2>
+                    <form id="appointmentForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">เลขบัตรประชาชน</label>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="appointmentNationalId" class="flex-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="1234567890123" maxlength="13">
+                                    <button type="button" onclick="lookupPatientForAppointment()" class="bg-indigo-500 text-white px-4 rounded-lg hover:bg-indigo-600 transition-colors">ค้นหาข้อมูล</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">เบอร์โทรศัพท์</label>
+                                <input type="tel" id="appointmentPhone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="081-234-5678">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อ</label>
+                                <input type="text" id="appointmentFirstName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกชื่อ">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">นามสกุล</label>
+                                <input type="text" id="appointmentLastName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกนามสกุล">
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">เลือกวันที่นัด (สามารถเลือกได้หลายวัน)</label>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div id="multiDateCalendar" class="max-w-md mx-auto bg-white rounded-lg shadow-sm border">
+                                    <!-- Calendar will be generated here -->
+                                </div>
+                                <div class="mt-4 text-center">
+                                    <p class="text-sm text-gray-600">คลิกวันที่เพื่อเลือก/ยกเลิก (เลือกแล้ว: <span id="selectedDatesCount">0</span> วัน)</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อยา</label>
+                                <input type="text" id="appointmentVaccine" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกชื่อยา">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ขนาดยา</label>
+                                <input type="text" id="appointmentDosage" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="เช่น เต็มโดส, 0.5 ml">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ตำแหน่งฉีด</label>
+                                <input type="text" id="appointmentInjectionSite" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="เช่น แขนซ้าย">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center">
+                            <button type="button" onclick="addSelectedDates()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">
+                                เพิ่มวันที่ที่เลือก
+                            </button>
+                        </div>
+                        <div id="appointmentDates" class="space-y-3"></div>
+                        
+                        <div class="flex space-x-4">
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200">
+                                บันทึกนัดหมาย
+                            </button>
+                            <button type="button" onclick="printCurrentAppointmentCard()" class="w-full bg-gray-500 text-white py-3 rounded-lg font-medium hover:bg-gray-600 transition duration-200">
+                                พิมพ์ใบนัด
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Register Patient Tab -->
+            <div id="registerContent" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📝 ลงทะเบียนข้อมูลผู้ป่วย</h2>
+                    <form id="registerForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อ</label>
+                                <input type="text" id="firstName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกชื่อ">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">นามสกุล</label>
+                                <input type="text" id="lastName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกนามสกุล">
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">เลขบัตรประชาชน</label>
+                                <input type="text" id="nationalId" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="1234567890123" maxlength="13">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">สถานที่ฉีด</label>
+                            <select id="hospital" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">เลือกสถานที่ฉีด</option>
+                                <option value="รพ.สต.หนองช้างแล่น บ้านห้วยน้ำเย็น หมู่ที่ 02 หนองช้างแล่น">รพ.สต.หนองช้างแล่น บ้านห้วยน้ำเย็น หมู่ที่ 02 หนองช้างแล่น</option>
+                                <option value="รพ.สต.หนองช้างแล่น บ้านห้วยโขง หมู่ที่ 03 หนองช้างแล่น">รพ.สต.หนองช้างแล่น บ้านห้วยโขง หมู่ที่ 03 หนองช้างแล่น</option>
+                                <option value="รพ.สต.บางดี บ้านพรุจูด หมู่ที่ 03 บางดี">รพ.สต.บางดี บ้านพรุจูด หมู่ที่ 03 บางดี</option>
+                                <option value="รพ.สต.บางดี บ้านโคกแตรก หมู่ที่ 05 บางดี">รพ.สต.บางดี บ้านโคกแตรก หมู่ที่ 05 บางดี</option>
+                                <option value="รพ.สต.บางกุ้ง บ้านตลาดนาวง หมู่ที่ 02 บางกุ้ง">รพ.สต.บางกุ้ง บ้านตลาดนาวง หมู่ที่ 02 บางกุ้ง</option>
+                                <option value="รพ.สต.บางกุ้ง บ้านเหนือคลอง หมู่ที่ 05 บางกุ้ง">รพ.สต.บางกุ้ง บ้านเหนือคลอง หมู่ที่ 05 บางกุ้ง</option>
+                                <option value="รพ.สต.เขากอบ บ้านถนนแพรก หมู่ที่ 04 เขากอบ">รพ.สต.เขากอบ บ้านถนนแพรก หมู่ที่ 04 เขากอบ</option>
+                                <option value="รพ.สต.เขากอบ บ้านหนองปรือ หมู่ที่ 08 เขากอบ">รพ.สต.เขากอบ บ้านหนองปรือ หมู่ที่ 08 เขากอบ</option>
+                                <option value="รพ.สต.เขาขาว บ้านควนทัง หมู่ที่ 07 เขาขาว">รพ.สต.เขาขาว บ้านควนทัง หมู่ที่ 07 เขาขาว</option>
+                                <option value="รพ.สต.เขาปูน บ้านเขาปูน หมู่ที่ 02 เขาปูน">รพ.สต.เขาปูน บ้านเขาปูน หมู่ที่ 02 เขาปูน</option>
+                                <option value="รพ.สต.ปากแจ่ม บ้านหนองหอย หมู่ที่ 03 ปากแจ่ม">รพ.สต.ปากแจ่ม บ้านหนองหอย หมู่ที่ 03 ปากแจ่ม</option>
+                                <option value="รพ.สต.ปากคม บ้านหนองขี้เสียด หมู่ที่ 02 ปากคม">รพ.สต.ปากคม บ้านหนองขี้เสียด หมู่ที่ 02 ปากคม</option>
+                                <option value="รพ.สต.ท่างิ้ว บ้านหินงอม หมู่ที่ 07 ท่างิ้ว">รพ.สต.ท่างิ้ว บ้านหินงอม หมู่ที่ 07 ท่างิ้ว</option>
+                                <option value="รพ.สต.ลำภูรา บ้านกลาง หมู่ที่ 01 ลำภูรา">รพ.สต.ลำภูรา บ้านกลาง หมู่ที่ 01 ลำภูรา</option>
+                                <option value="รพ.สต.นาวง บ้านหนองหมอ หมู่ที่ 01 นาวง">รพ.สต.นาวง บ้านหนองหมอ หมู่ที่ 01 นาวง</option>
+                                <option value="รพ.สต.นาวง บ้านโพธิ์โทน หมู่ที่ 06 นาวง">รพ.สต.นาวง บ้านโพธิ์โทน หมู่ที่ 06 นาวง</option>
+                                <option value="รพ.สต.ห้วยนาง บ้านห้วยนาง หมู่ที่ 02 ห้วยนาง">รพ.สต.ห้วยนาง บ้านห้วยนาง หมู่ที่ 02 ห้วยนาง</option>
+                                <option value="รพ.สต.ในเตา บ้านหน้าวัด หมู่ที่ 01 ในเตา">รพ.สต.ในเตา บ้านหน้าวัด หมู่ที่ 01 ในเตา</option>
+                                <option value="รพ.สต.ทุ่งต่อ บ้านห้วยลึก หมู่ที่ 07 ทุ่งต่อ">รพ.สต.ทุ่งต่อ บ้านห้วยลึก หมู่ที่ 07 ทุ่งต่อ</option>
+                                <option value="รพ.สต.วังคีรี บ้านวังลำใต้ หมู่ที่ 02">รพ.สต.วังคีรี บ้านวังลำใต้ หมู่ที่ 02</option>
+                            </select>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">วันที่ฉีด</label>
+                                <input type="date" id="vaccineDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อยา</label>
+                                <input type="text" id="vaccineName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกชื่อยา">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ขนาดยา</label>
+                                <input type="text" id="vaccineDosage" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="เช่น เต็มโดส">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ตำแหน่งฉีด</label>
+                                <input type="text" id="injectionSite" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="เช่น แขนซ้าย">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center">
+                            <button type="button" onclick="addVaccineDate()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">
+                                เพิ่มข้อมูลการฉีด
+                            </button>
+                        </div>
+                        <div id="vaccineDates" class="space-y-3"></div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200">
+                            บันทึกข้อมูล
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <!-- ***** MODIFIED SECTION START ***** -->
+            <div id="dashboardContent" class="tab-content hidden">
+                <div class="max-w-3xl mx-auto">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">📊 นัดหมายวันนี้</h2>
+                        <div class="space-y-4" id="todayAppointments">
+                            <!-- Today's appointments will be generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ***** MODIFIED SECTION END ***** -->
+
+        </main>
+    </div>
     
-    <!-- Login Page --> 
-    <div id="loginPage" class="min-h-screen flex items-center justify-center p-4"> 
-        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md"> 
-            <div class="text-center mb-8"> 
-                <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"> 
-                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path> 
-                    </svg> 
-                </div> 
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">ระบบลงทะเบียนวัคซีน</h1> 
-                <p class="text-gray-600">สำหรับเจ้าหน้าที่และพยาบาล</p> 
-            </div> 
-             
-            <form id="loginForm" class="space-y-6"> 
-                <div> 
-                    <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้</label> 
-                    <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="กรอกชื่อผู้ใช้"> 
-                </div> 
-                 
-                <div> 
-                    <label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน</label> 
-                    <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="กรอกรหัสผ่าน"> 
-                </div> 
-                 
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200"> 
-                    เข้าสู่ระบบ 
-                </button> 
-            </form> 
-             
-            <div class="mt-6 p-4 bg-gray-50 rounded-lg"> 
-                <p class="text-sm text-gray-600 mb-2"><strong>Demo Accounts:</strong></p> 
-                <p class="text-xs text-gray-500">👨⚕️ พยาบาล: nurse1 / password123</p> 
-                <p class="text-xs text-gray-500">👩💼 แอดมิน: admin1 / admin123</p> 
-            </div> 
-        </div> 
-    </div> 
-
-    <!-- Main Dashboard --> 
-    <div id="mainSystem" class="hidden"> 
-        <!-- Header --> 
-        <header class="bg-white shadow-sm border-b"> 
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> 
-                <div class="flex justify-between items-center py-4"> 
-                    <div class="flex items-center space-x-4"> 
-                        <div class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center"> 
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path> 
-                            </svg> 
-                        </div> 
-                        <div> 
-                            <h1 class="text-xl font-bold text-gray-800">ระบบลงทะเบียนวัคซีน</h1> 
-                            <p class="text-sm text-gray-600" id="userRole">พยาบาล</p> 
-                        </div> 
-                    </div> 
-                    <div class="flex items-center space-x-4"> 
-                        <span class="text-sm text-gray-600" id="currentDate"></span> 
-                        <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-200"> 
-                            ออกจากระบบ 
-                        </button> 
-                    </div> 
-                </div> 
-            </div> 
-        </header> 
-
-       <!-- Navigation Tabs --> 
-<div class="py-4"> 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> 
-        <!-- กรอบสำหรับเมนู --> 
-        <div class="bg-blue-200 rounded-xl p-1 flex justify-center w-fit mx-auto shadow-inner"> 
-            <nav class="flex items-center gap-x-1"> 
-                <!-- เมนูสำหรับทุกคน --> 
-                <button onclick="showTab('search')" id="searchTab" class="tab-button whitespace-nowrap py-2 px-4 text-sm font-medium rounded-lg bg-white text-blue-600 shadow-sm">🔍 ค้นหาผู้ป่วย</button> 
-                <button onclick="showTab('register')" id="registerTab" class="tab-button whitespace-nowrap py-2 px-4 text-sm font-medium rounded-lg text-gray-600 hover:bg-white hover:text-blue-600">📝 ลงทะเบียนข้อมูล</button> 
-                 
-                <!-- เมนูสำหรับแอดมินเท่านั้น --> 
-                <button onclick="showTab('appointment')" id="appointmentTab" class="tab-button whitespace-nowrap py-2 px-4 text-sm font-medium rounded-lg text-gray-600 hover:bg-white hover:text-blue-600 admin-only">📅 ลงทะเบียนนัดหมาย</button> 
-                <button onclick="showTab('dashboard')" id="dashboardTab" class="tab-button whitespace-nowrap py-2 px-4 text-sm font-medium rounded-lg text-gray-600 hover:bg-white hover:text-blue-600 admin-only">📊 แดชบอร์ด</button> 
-                <button onclick="showTab('hospitals')" id="hospitalsTab" class="tab-button whitespace-nowrap py-2 px-4 text-sm font-medium rounded-lg text-gray-600 hover:bg-white hover:text-blue-600 admin-only">🏥 รายชื่อ รพ.สต.</button> 
-            </nav> 
-        </div> 
-    </div> 
-</div> 
-
-        <!-- Content Area --> 
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> 
-            <!-- Search Patient Tab --> 
-            <div id="searchContent" class="tab-content"> 
-                <div class="bg-white rounded-xl shadow-lg p-6"> 
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">🔍 ค้นหาข้อมูลผู้ป่วย</h2> 
-                     
-                    <div class="mb-6"> 
-                        <label class="block text-sm font-medium text-gray-700 mb-2">เลขบัตรประชาชน</label> 
-                        <div class="flex space-x-4"> 
-                            <input type="text" id="searchId" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกเลขบัตรประชาชน 13 หลัก" maxlength="13"> 
-                            <button onclick="searchPatient()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-200"> 
-                                ค้นหา 
-                            </button> 
-                        </div> 
-                    </div> 
-
-                    <div id="patientInfo" class="hidden"> 
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-6"> 
-                            <h3 class="text-lg font-semibold text-green-800 mb-4">ข้อมูลผู้ป่วย</h3> 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4"> 
-                                <div> 
-                                    <p class="text-sm text-gray-600">ชื่อ-นามสกุล</p> 
-                                    <p class="font-medium" id="patientName">นายสมชาย ใจดี</p> 
-                                </div> 
-                                <div> 
-                                    <p class="text-sm text-gray-600">เบอร์โทรศัพท์</p> 
-                                    <p class="font-medium" id="patientPhone">081-234-5678</p> 
-                                </div> 
-                                <div class="col-span-1 md:col-span-2"> 
-    <h4 class="font-semibold text-gray-800 mb-2">ตารางนัดหมาย</h4> 
-    <div id="appointmentTableContainer"> 
-        <!-- ตารางจะถูกสร้างโดย JavaScript ที่นี่ --> 
-    </div> 
-</div> 
-                            </div> 
-                             
-                            <div class="mt-6"> 
-                                <h4 class="font-semibold text-gray-800 mb-3">ประวัติการฉีดวัคซีน</h4> 
-                                <div class="space-y-2" id="vaccineHistory"> 
-                                    <div class="flex justify-between items-center p-3 bg-white rounded-lg border"> 
-                                        <div> 
-                                            <p class="font-medium">Pfizer-BioNTech (เข็มที่ 1)</p> 
-                                            <p class="text-sm text-gray-600">รพ.สต.หนองช้างแล่น</p> 
-                                        </div> 
-                                        <span class="text-sm text-gray-500">10 ธ.ค. 2566</span> 
-                                    </div> 
-                                </div> 
-                            </div> 
-                        </div> 
-                    </div> 
-                </div> 
-            </div> 
-
-            <!-- Appointment Registration Tab --> 
-            <div id="appointmentContent" class="tab-content hidden"> 
-                <div class="bg-white rounded-xl shadow-lg p-6"> 
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📅 ลงทะเบียนนัดหมาย (สำหรับแอดมิน)</h2> 
-                     
-                    <form id="appointmentForm" class="space-y-6"> 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">เลขบัตรประชาชน</label> 
-                                <input type="text" id="appointmentNationalId" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="1234567890123" maxlength="13"> 
-                            </div> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">เบอร์โทรศัพท์</label> 
-                                <input type="tel" id="appointmentPhone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="081-234-5678"> 
-                            </div> 
-                        </div> 
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อ</label> 
-                                <input type="text" id="appointmentFirstName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกชื่อ"> 
-                            </div> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">นามสกุล</label> 
-                                <input type="text" id="appointmentLastName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกนามสกุล"> 
-                            </div> 
-                        </div> 
-
-
-
-                        <!-- Multi-Date Calendar --> 
-                        <div class="mb-6"> 
-                            <label class="block text-sm font-medium text-gray-700 mb-2">เลือกวันที่นัด (สามารถเลือกได้หลายวัน)</label> 
-                            <div class="bg-gray-50 p-4 rounded-lg"> 
-                                <div id="multiDateCalendar" class="max-w-md mx-auto bg-white rounded-lg shadow-sm border"> 
-                                    <!-- Calendar will be generated here --> 
-                                </div> 
-                                <div class="mt-4 text-center"> 
-                                    <p class="text-sm text-gray-600">คลิกวันที่เพื่อเลือก/ยกเลิก (เลือกแล้ว: <span id="selectedDatesCount">0</span> วัน)</p> 
-                                </div> 
-                            </div> 
-                        </div> 
-
-                        <div> 
-                            <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อยา</label> 
-                            <select id="appointmentVaccine" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"> 
-                                <option value="">เลือกชื่อยา</option> 
-                                <option value="Pfizer-BioNTech">Pfizer-BioNTech</option> 
-                                <option value="AstraZeneca">AstraZeneca</option> 
-                                <option value="Moderna">Moderna</option> 
-                                <option value="Sinovac">Sinovac</option> 
-                                <option value="Sinopharm">Sinopharm</option> 
-                                <option value="Johnson & Johnson">Johnson & Johnson</option> 
-                            </select> 
-                        </div> 
-
-                        <div class="flex justify-center"> 
-                            <button type="button" onclick="addSelectedDates()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200"> 
-                                เพิ่มวันที่ที่เลือก 
-                            </button> 
-                        </div> 
-
-                        <div id="appointmentDates" class="space-y-3"></div> 
-
-                        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200"> 
-                            บันทึกนัดหมาย 
-                        </button> 
-                    </form> 
-                </div> 
-            </div> 
-
-            <!-- Register Patient Tab --> 
-            <div id="registerContent" class="tab-content hidden"> 
-                <div class="bg-white rounded-xl shadow-lg p-6"> 
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">📝 ลงทะเบียนข้อมูลผู้ป่วย</h2> 
-                     
-                    <form id="registerForm" class="space-y-6"> 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อ</label> 
-                                <input type="text" id="firstName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกชื่อ"> 
-                            </div> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">นามสกุล</label> 
-                                <input type="text" id="lastName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="กรอกนามสกุล"> 
-                            </div> 
-                        </div> 
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">เบอร์โทรศัพท์</label> 
-                                <input type="tel" id="phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="081-234-5678"> 
-                            </div> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">เลขบัตรประชาชน</label> 
-                                <input type="text" id="nationalId" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="1234567890123" maxlength="13"> 
-                            </div> 
-                        </div> 
-
-                        <div> 
-                            <label class="block text-sm font-medium text-gray-700 mb-2">สถานที่ฉีด</label> 
-                            <select id="hospital" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"> 
-                                <option value="">เลือกสถานที่ฉีด</option> 
-                                <option value="รพ.สต.หนองช้างแล่น บ้านห้วยน้ำเย็น หมู่ที่ 02 หนองช้างแล่น">รพ.สต.หนองช้างแล่น บ้านห้วยน้ำเย็น หมู่ที่ 02 หนองช้างแล่น</option> 
-                                <option value="รพ.สต.หนองช้างแล่น บ้านห้วยโขง หมู่ที่ 03 หนองช้างแล่น">รพ.สต.หนองช้างแล่น บ้านห้วยโขง หมู่ที่ 03 หนองช้างแล่น</option> 
-                                <option value="รพ.สต.บางดี บ้านพรุจูด หมู่ที่ 03 บางดี">รพ.สต.บางดี บ้านพรุจูด หมู่ที่ 03 บางดี</option> 
-                                <option value="รพ.สต.บางดี บ้านโคกแตรก หมู่ที่ 05 บางดี">รพ.สต.บางดี บ้านโคกแตรก หมู่ที่ 05 บางดี</option> 
-                                <option value="รพ.สต.บางกุ้ง บ้านตลาดนาวง หมู่ที่ 02 บางกุ้ง">รพ.สต.บางกุ้ง บ้านตลาดนาวง หมู่ที่ 02 บางกุ้ง</option> 
-                                <option value="รพ.สต.บางกุ้ง บ้านเหนือคลอง หมู่ที่ 05 บางกุ้ง">รพ.สต.บางกุ้ง บ้านเหนือคลอง หมู่ที่ 05 บางกุ้ง</option> 
-                                <option value="รพ.สต.เขากอบ บ้านถนนแพรก หมู่ที่ 04 เขากอบ">รพ.สต.เขากอบ บ้านถนนแพรก หมู่ที่ 04 เขากอบ</option> 
-                                <option value="รพ.สต.เขากอบ บ้านหนองปรือ หมู่ที่ 08 เขากอบ">รพ.สต.เขากอบ บ้านหนองปรือ หมู่ที่ 08 เขากอบ</option> 
-                                <option value="รพ.สต.เขาขาว บ้านควนทัง หมู่ที่ 07 เขาขาว">รพ.สต.เขาขาว บ้านควนทัง หมู่ที่ 07 เขาขาว</option> 
-                                <option value="รพ.สต.เขาปูน บ้านเขาปูน หมู่ที่ 02 เขาปูน">รพ.สต.เขาปูน บ้านเขาปูน หมู่ที่ 02 เขาปูน</option> 
-                                <option value="รพ.สต.ปากแจ่ม บ้านหนองหอย หมู่ที่ 03 ปากแจ่ม">รพ.สต.ปากแจ่ม บ้านหนองหอย หมู่ที่ 03 ปากแจ่ม</option> 
-                                <option value="รพ.สต.ปากคม บ้านหนองขี้เสียด หมู่ที่ 02 ปากคม">รพ.สต.ปากคม บ้านหนองขี้เสียด หมู่ที่ 02 ปากคม</option> 
-                                <option value="รพ.สต.ท่างิ้ว บ้านหินงอม หมู่ที่ 07 ท่างิ้ว">รพ.สต.ท่างิ้ว บ้านหินงอม หมู่ที่ 07 ท่างิ้ว</option> 
-                                <option value="รพ.สต.ลำภูรา บ้านกลาง หมู่ที่ 01 ลำภูรา">รพ.สต.ลำภูรา บ้านกลาง หมู่ที่ 01 ลำภูรา</option> 
-                                <option value="รพ.สต.นาวง บ้านหนองหมอ หมู่ที่ 01 นาวง">รพ.สต.นาวง บ้านหนองหมอ หมู่ที่ 01 นาวง</option> 
-                                <option value="รพ.สต.นาวง บ้านโพธิ์โทน หมู่ที่ 06 นาวง">รพ.สต.นาวง บ้านโพธิ์โทน หมู่ที่ 06 นาวง</option> 
-                                <option value="รพ.สต.ห้วยนาง บ้านห้วยนาง หมู่ที่ 02 ห้วยนาง">รพ.สต.ห้วยนาง บ้านห้วยนาง หมู่ที่ 02 ห้วยนาง</option> 
-                                <option value="รพ.สต.ในเตา บ้านหน้าวัด หมู่ที่ 01 ในเตา">รพ.สต.ในเตา บ้านหน้าวัด หมู่ที่ 01 ในเตา</option> 
-                                <option value="รพ.สต.ทุ่งต่อ บ้านห้วยลึก หมู่ที่ 07 ทุ่งต่อ">รพ.สต.ทุ่งต่อ บ้านห้วยลึก หมู่ที่ 07 ทุ่งต่อ</option> 
-                                <option value="รพ.สต.วังคีรี บ้านวังลำใต้ หมู่ที่ 02">รพ.สต.วังคีรี บ้านวังลำใต้ หมู่ที่ 02</option> 
-                            </select> 
-                        </div> 
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6"> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">วันที่ฉีด</label> 
-                                <input type="date" id="vaccineDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"> 
-                            </div> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อยา</label> 
-                                <select id="vaccineName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"> 
-                                    <option value="">เลือกชื่อยา</option> 
-                                    <option value="Pfizer-BioNTech">Pfizer-BioNTech</option> 
-                                    <option value="AstraZeneca">AstraZeneca</option> 
-                                    <option value="Moderna">Moderna</option> 
-                                    <option value="Sinovac">Sinovac</option> 
-                                    <option value="Sinopharm">Sinopharm</option> 
-                                    <option value="Johnson & Johnson">Johnson & Johnson</option> 
-                                </select> 
-                            </div> 
-                            <div> 
-                                <label class="block text-sm font-medium text-gray-700 mb-2">ตำแหน่งฉีด</label> 
-                                <select id="injectionSite" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"> 
-                                    <option value="">เลือกตำแหน่งฉีด</option> 
-                                    <option value="แขนซ้าย">แขนซ้าย</option> 
-                                    <option value="แขนขวา">แขนขวา</option> 
-                                    <option value="ต้นขาซ้าย">ต้นขาซ้าย</option> 
-                                    <option value="ต้นขาขวา">ต้นขาขวา</option> 
-                                </select> 
-                            </div> 
-                        </div> 
-
-                        <div class="flex justify-center"> 
-                            <button type="button" onclick="addVaccineDate()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200"> 
-                                เพิ่มข้อมูลการฉีด 
-                            </button> 
-                        </div> 
-
-                        <div id="vaccineDates" class="space-y-3"></div> 
-
-                        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200"> 
-                            บันทึกข้อมูล 
-                        </button> 
-                    </form> 
-                </div> 
-            </div> 
-
-            <!-- Dashboard Tab --> 
-            <div id="dashboardContent" class="tab-content hidden"> 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6"> 
-                    <div class="bg-white rounded-xl shadow-lg p-6"> 
-                        <h2 class="text-2xl font-bold text-gray-800 mb-6">📊 นัดหมายวันนี้</h2> 
-                        <div class="space-y-4" id="todayAppointments"> 
-                            <div class="flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200"> 
-                                <div> 
-                                    <p class="font-medium text-blue-800">นายสมชาย ใจดี</p> 
-                                    <p class="text-sm text-blue-600">081-234-5678</p> 
-                                    <p class="text-sm text-gray-600">Pfizer-BioNTech (เข็มที่ 2)</p> 
-                                </div> 
-                                <div class="text-right"> 
-                                    <p class="text-sm text-gray-500">09:00 น.</p> 
-                                    <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">รอฉีด</span> 
-                                </div> 
-                            </div> 
-                             
-                            <div class="flex justify-between items-center p-4 bg-green-50 rounded-lg border border-green-200"> 
-                                <div> 
-                                    <p class="font-medium text-green-800">นางสาวมาลี สวยงาม</p> 
-                                    <p class="text-sm text-green-600">089-876-5432</p> 
-                                    <p class="text-sm text-gray-600">AstraZeneca (เข็มที่ 1)</p> 
-                                </div> 
-                                <div class="text-right"> 
-                                    <p class="text-sm text-gray-500">10:30 น.</p> 
-                                    <span class="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">ฉีดแล้ว</span> 
-                                </div> 
-                            </div> 
-                        </div> 
-                    </div> 
-
-                    <div class="bg-white rounded-xl shadow-lg p-6"> 
-                        <h2 class="text-2xl font-bold text-gray-800 mb-6">📈 สถิติรายวัน</h2> 
-                        <div class="grid grid-cols-2 gap-4"> 
-                            <div class="text-center p-4 bg-blue-50 rounded-lg"> 
-                                <p class="text-3xl font-bold text-blue-600">12</p> 
-                                <p class="text-sm text-gray-600">นัดหมายวันนี้</p> 
-                            </div> 
-                            <div class="text-center p-4 bg-green-50 rounded-lg"> 
-                                <p class="text-3xl font-bold text-green-600">8</p> 
-                                <p class="text-sm text-gray-600">ฉีดแล้ว</p> 
-                            </div> 
-                            <div class="text-center p-4 bg-yellow-50 rounded-lg"> 
-                                <p class="text-3xl font-bold text-yellow-600">4</p> 
-                                <p class="text-sm text-gray-600">รอฉีด</p> 
-                            </div> 
-                            <div class="text-center p-4 bg-red-50 rounded-lg"> 
-                                <p class="text-3xl font-bold text-red-600">0</p> 
-                                <p class="text-sm text-gray-600">ไม่มา</p> 
-                            </div> 
-                        </div> 
-                    </div> 
-                </div> 
-            </div> 
-
-            <!-- Hospitals Tab --> 
-            <div id="hospitalsContent" class="tab-content hidden"> 
-                <div class="bg-white rounded-xl shadow-lg p-6"> 
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">🏥 รายชื่อโรงพยาบาลส่งเสริมสุขภาพตำบล</h2> 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">1. รพ.สต.หนองช้างแล่น</h3> 
-                            <p class="text-sm text-gray-600">บ้านห้วยน้ำเย็น หมู่ที่ 02 หนองช้างแล่น</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">2. รพ.สต.หนองช้างแล่น</h3> 
-                            <p class="text-sm text-gray-600">บ้านห้วยโขง หมู่ที่ 03 หนองช้างแล่น</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">3. รพ.สต.บางดี</h3> 
-                            <p class="text-sm text-gray-600">บ้านพรุจูด หมู่ที่ 03 บางดี</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">4. รพ.สต.บางดี</h3> 
-                            <p class="text-sm text-gray-600">บ้านโคกแตรก หมู่ที่ 05 บางดี</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">5. รพ.สต.บางกุ้ง</h3> 
-                            <p class="text-sm text-gray-600">บ้านตลาดนาวง หมู่ที่ 02 บางกุ้ง</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">6. รพ.สต.บางกุ้ง</h3> 
-                            <p class="text-sm text-gray-600">บ้านเหนือคลอง หมู่ที่ 05 บางกุ้ง</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">7. รพ.สต.เขากอบ</h3> 
-                            <p class="text-sm text-gray-600">บ้านถนนแพรก หมู่ที่ 04 เขากอบ</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">8. รพ.สต.เขากอบ</h3> 
-                            <p class="text-sm text-gray-600">บ้านหนองปรือ หมู่ที่ 08 เขากอบ</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">9. รพ.สต.เขาขาว</h3> 
-                            <p class="text-sm text-gray-600">บ้านควนทัง หมู่ที่ 07 เขาขาว</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">10. รพ.สต.เขาปูน</h3> 
-                            <p class="text-sm text-gray-600">บ้านเขาปูน หมู่ที่ 02 เขาปูน</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">11. รพ.สต.ปากแจ่ม</h3> 
-                            <p class="text-sm text-gray-600">บ้านหนองหอย หมู่ที่ 03 ปากแจ่ม</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">12. รพ.สต.ปากคม</h3> 
-                            <p class="text-sm text-gray-600">บ้านหนองขี้เสียด หมู่ที่ 02 ปากคม</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">13. รพ.สต.ท่างิ้ว</h3> 
-                            <p class="text-sm text-gray-600">บ้านหินงอม หมู่ที่ 07 ท่างิ้ว</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">14. รพ.สต.ลำภูรา</h3> 
-                            <p class="text-sm text-gray-600">บ้านกลาง หมู่ที่ 01 ลำภูรา</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">15. รพ.สต.นาวง</h3> 
-                            <p class="text-sm text-gray-600">บ้านหนองหมอ หมู่ที่ 01 นาวง</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">16. รพ.สต.นาวง</h3> 
-                            <p class="text-sm text-gray-600">บ้านโพธิ์โทน หมู่ที่ 06 นาวง</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">17. รพ.สต.ห้วยนาง</h3> 
-                            <p class="text-sm text-gray-600">บ้านห้วยนาง หมู่ที่ 02 ห้วยนาง</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">18. รพ.สต.ในเตา</h3> 
-                            <p class="text-sm text-gray-600">บ้านหน้าวัด หมู่ที่ 01 ในเตา</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">19. รพ.สต.ทุ่งต่อ</h3> 
-                            <p class="text-sm text-gray-600">บ้านห้วยลึก หมู่ที่ 07 ทุ่งต่อ</p> 
-                        </div> 
-                        <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"> 
-                            <h3 class="font-semibold text-gray-800">20. รพ.สต.วังคีรี</h3> 
-                            <p class="text-sm text-gray-600">บ้านวังลำใต้ หมู่ที่ 02</p> 
-                        </div> 
-                    </div> 
-                </div> 
-            </div> 
-        </main> 
-    </div> 
-
-    <script> 
-        // Sample data 
-
-
-async function loadDashboardData() { 
-    const container = document.getElementById('todayAppointments'); 
-    container.innerHTML = '<p class="text-center text-gray-500">กำลังโหลดข้อมูลนัดหมาย...</p>'; 
-
-    try { 
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST', 
-            headers: { 'Content-Type': 'text/plain' }, 
-            redirect: 'follow', 
-            body: JSON.stringify({ action: 'getTodaysAppointments' }) 
-        }); 
-
-        const result = await response.json(); 
-
-        if (result.success && result.data) { 
-            container.innerHTML = ''; // ล้างข้อความ "กำลังโหลด" 
-            if (result.data.length > 0) { 
-                result.data.forEach(app => { 
-                    const statusColor = app.status === 'ฉีดแล้ว'  
-                        ? 'bg-green-100 text-green-800'  
-                        : 'bg-yellow-100 text-yellow-800'; 
-
-                    const appointmentCard = document.createElement('div'); 
-                    appointmentCard.className = 'flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200'; 
-                    appointmentCard.innerHTML = ` 
-                        <div> 
-                            <p class="font-medium text-blue-800">${app.name}</p> 
-                            <p class="text-sm text-blue-600">${app.phone || 'ไม่มีเบอร์โทร'}</p> 
-                            <p class="text-sm text-gray-600">${app.vaccine}</p> 
-                        </div> 
-                        <div class="text-right"> 
-                            <span class="inline-block px-2 py-1 text-xs rounded-full ${statusColor}"> 
-                                ${app.status} 
-                            </span> 
-                        </div> 
-                    `; 
-                    container.appendChild(appointmentCard); 
-                }); 
-            } else { 
-                container.innerHTML = '<p class="text-center text-gray-500">วันนี้ไม่มีนัดหมาย</p>'; 
-            } 
-        } else { 
-            throw new Error(result.error || 'ไม่สามารถโหลดข้อมูลได้'); 
-        } 
-    } catch (error) { 
-        console.error('Dashboard Load Error:', error); 
-        container.innerHTML = `<p class="text-center text-red-500">เกิดข้อผิดพลาด: ${error.message}</p>`; 
-    } 
-} 
-
-
-
-
-
-
-
-         
-        let patients = [ 
-            { 
-                id: '1234567890123', 
-                name: 'นายสมชาย ใจดี', 
-                phone: '081-234-5678', 
-                appointments: [ 
-                    { date: '2024-01-15', vaccine: 'Pfizer-BioNTech', hospital: 'รพ.สต.หนองช้างแล่น' }, 
-                    { date: '2024-02-20', vaccine: 'Pfizer-BioNTech', hospital: 'รพ.สต.หนองช้างแล่น' }, 
-                    { date: '2024-03-25', vaccine: 'Pfizer-BioNTech', hospital: 'รพ.สต.หนองช้างแล่น' } 
-                ], 
-                history: [ 
-                    { date: '2023-12-10', vaccine: 'Pfizer-BioNTech (เข็มที่ 1)', hospital: 'รพ.สต.หนองช้างแล่น' } 
-                ] 
-            }, 
-            { 
-                id: '9876543210987', 
-                name: 'นางสาวมาลี สวยงาม', 
-                phone: '089-876-5432', 
-                appointments: [ 
-                    { date: '2024-02-20', vaccine: 'AstraZeneca', hospital: 'รพ.สต.บางดี' } 
-                ], 
-                history: [ 
-                    { date: '2023-11-15', vaccine: 'AstraZeneca (เข็มที่ 1)', hospital: 'รพ.สต.บางดี' } 
-                ] 
-            } 
-        ]; 
-
-
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWOncwf4ERzzTjKbIy75DTUpbjZ4OOZGrAH3twmkmd5JFMHiIsNFsgZDY5h6OiHG-a/exec'; 
-        let vaccineDatesArray = []; 
-        let appointmentDatesArray = []; 
-        let currentUserRole = ''; 
-        let selectedDates = []; 
-        let currentMonth = new Date().getMonth(); 
-        let currentYear = new Date().getFullYear(); 
-
-        // Function to format Thai date properly 
-       /** 
- * Formats a date string into a proper Thai date with a B.E. year. 
- * -- MODIFIED: Prevents double-adding 543 to the year. 
- */ 
-function formatThaiDate(dateStr) { 
-    if (!dateStr) return ''; 
-    const date = new Date(dateStr); 
-     
-    // Check if the date is valid 
-    if (isNaN(date.getTime())) { 
-        return 'วันที่ไม่ถูกต้อง'; 
-    } 
-
-    const year = date.getFullYear(); 
-     
-    // **[FIX]** Check if the year is already a Buddhist Era year. 
-    // If it is, use it directly. If not (it's A.D.), then add 543. 
-    const thaiYear = year > 2500 ? year : year + 543; 
-
-    const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']; 
-     
-    return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${thaiYear}`; 
-} 
-
-        // Initialize 
-       // -- เพิ่มส่วนนี้เข้าไปด้านบนสุดของโค้ดที่เกี่ยวกับฟังก์ชัน -- 
-document.addEventListener('DOMContentLoaded', function() { 
-    const loggedInUserRole = sessionStorage.getItem('userRole'); 
-    if (loggedInUserRole) { 
-        console.log('พบผู้ใช้ใน session:', loggedInUserRole); 
-        showMainSystem(loggedInUserRole); 
-    } 
-    updateCurrentDate(); 
-    generateCalendar(); 
-}); 
-
-        function updateCurrentDate() { 
-            const now = new Date(); 
-            const options = {  
-                year: 'numeric',  
-                month: 'long',  
-                day: 'numeric', 
-                weekday: 'long' 
-            }; 
-            document.getElementById('currentDate').textContent = now.toLocaleDateString('th-TH', options); 
-        } 
-
-        // Login functionality 
-       // -- แทนที่ event listener ของ loginForm เดิมด้วยโค้ดนี้ -- 
-document.getElementById('loginForm').addEventListener('submit', async function(e) { 
-    e.preventDefault(); 
-    const username = document.getElementById('username').value; 
-    const password = document.getElementById('password').value; 
-    const loginButton = this.querySelector('button[type="submit"]'); 
-    const originalButtonText = loginButton.textContent; 
-
-    loginButton.disabled = true; 
-    loginButton.textContent = 'กำลังตรวจสอบ...'; 
-
-    try { 
-        const response = await fetch(GOOGLE_SCRIPT_URL, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'text/plain' }, 
-            body: JSON.stringify({ 
-                action: 'login', 
-                username: username, 
-                password: password 
-            }) 
-        }); 
-         
-        const result = await response.json(); 
-
-        if (result.success) { 
-            // **ส่วนสำคัญ** 
-            const role = result.role; 
-            sessionStorage.setItem('userRole', role); // บันทึก session 
-            showMainSystem(role); // แสดงหน้าหลัก 
-        } else { 
-             alert('❌ ' + (result.message || result.error || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')); 
-        } 
-
-    } catch (error) { 
-        console.error('Login Error:', error); 
-        alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์'); 
-    } finally { 
-        loginButton.disabled = false; 
-        loginButton.textContent = originalButtonText; 
-    } 
-}); 
-
-
-// -- เพิ่มฟังก์ชันใหม่ และแก้ไขฟังก์ชัน logout -- 
-function showMainSystem(role) { 
-    // ซ่อนหน้าล็อกอินและแสดงหน้าหลัก 
-    document.getElementById('loginPage').classList.add('hidden'); 
-    document.getElementById('mainSystem').classList.remove('hidden'); 
-     
-    // ตั้งค่า role ส่วนกลางและแสดงผลที่ header 
-    currentUserRole = role; 
-    document.getElementById('userRole').textContent = role; 
-     
-    // ซ่อนทุกเมนู admin-only ไว้เป็นค่าเริ่มต้น 
-    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('show')); 
-
-    // ตรวจสอบสิทธิ์ 
-    if (role === 'แอดมิน') { 
-        // ถ้าเป็นแอดมิน ให้แสดงทุกเมนู 
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('show')); 
-        // ตั้งค่าให้แอดมินเห็นหน้าค้นหาเป็นหน้าแรก 
-        showTab('search');  
-    } else if (role === 'พยาบาล') { 
-        // ถ้าเป็นพยาบาล ไม่ต้องทำอะไรเพิ่ม เพราะเมนู admin-only จะถูกซ่อนอยู่แล้วโดย CSS 
-        // ตั้งค่าให้พยาบาลเห็นหน้าค้นหาเป็นหน้าแรก 
-        showTab('search'); 
-    } 
-} 
-
-function logout() { 
-    // **บรรทัดสำคัญ:** ล้างข้อมูล sessionStorage 
-    sessionStorage.removeItem('userRole'); 
-
-    // กลับไปหน้า login 
-    document.getElementById('loginPage').classList.remove('hidden'); 
-    document.getElementById('mainSystem').classList.add('hidden'); 
-    document.getElementById('loginForm').reset(); 
-
-    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('show')); 
-    currentUserRole = ''; 
-} 
-
-        // Tab functionality 
-function showTab(tabName) { 
-    // ... (โค้ดส่วนบนของฟังก์ชันนี้ยังคงเดิม) ... 
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden')); 
-    document.querySelectorAll('.tab-button').forEach(tab => { 
-        tab.classList.remove('bg-white', 'text-blue-600', 'shadow-sm'); 
-        tab.classList.add('text-gray-600'); 
-    }); 
-     
-    document.getElementById(tabName + 'Content').classList.remove('hidden'); 
-     
-    const activeTab = document.getElementById(tabName + 'Tab'); 
-    activeTab.classList.remove('text-gray-600'); 
-    activeTab.classList.add('bg-white', 'text-blue-600', 'shadow-sm'); 
-
-    // **[เพิ่มส่วนนี้เข้าไป]** 
-    // ถ้าผู้ใช้คลิกที่แท็บแดชบอร์ด ให้โหลดข้อมูล 
-    if (tabName === 'dashboard') { 
-        loadDashboardData(); 
-    } 
-} 
-
-        // Search patient function (อัพเดทใหม่ - รองรับ Google Sheets) 
-        async function searchPatient() { 
-            const searchId = document.getElementById('searchId').value.trim(); 
-             
-            if (!searchId) { 
-                alert('กรุณากรอกเลขบัตรประชาชน'); 
-                return; 
-            } 
-             
-            const searchButton = document.querySelector('#searchContent button'); 
-            const originalText = searchButton.textContent; 
-            searchButton.textContent = 'กำลังค้นหา...'; 
-            searchButton.disabled = true; 
-             
-            try { 
-                // ค้นหาจาก Google Sheets ก่อน 
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWOncwf4ERzzTjKbIy75DTUpbjZ4OOZGrAH3twmkmd5JFMHiIsNFsgZDY5h6OiHG-a/exec'; 
-                 
-                const response = await fetch(GOOGLE_SCRIPT_URL, { 
-                    method: 'POST', 
-                    headers: { 
-                        'Content-Type': 'text/plain', 
-                    }, 
-                    body: JSON.stringify({ 
-                        action: 'searchPatient', 
-                        nationalId: searchId 
-                    }) 
-                }); 
-                 
-                const result = await response.json(); 
-                 
-                if (result.success) { 
-                    // พบข้อมูลใน Google Sheets 
-                    console.log('Found patient in Google Sheets:', result.data); 
-                    displayPatientInfo(result.data); 
-                } else { 
-                    // ไม่พบใน Google Sheets ให้ค้นหาจากข้อมูลตัวอย่าง 
-                    console.log('Not found in Google Sheets, searching sample data...'); 
-                    searchFromSampleData(searchId); 
-                } 
-                 
-            } catch (error) { 
-                console.error('Error searching from Google Sheets:', error); 
-                // ถ้าเกิดข้อผิดพลาด ให้ค้นหาจากข้อมูลตัวอย่าง 
-                searchFromSampleData(searchId); 
-            } finally { 
-                searchButton.textContent = originalText; 
-                searchButton.disabled = false; 
-            } 
-        } 
-
-        // ฟังก์ชันค้นหาจากข้อมูลตัวอย่าง 
-        function searchFromSampleData(searchId) { 
-            let foundPatient = patients.find(p => p.id === searchId); 
-             
-            // ถ้าไม่เจอในข้อมูลตัวอย่าง ให้ค้นหาจากข้อมูลที่ลงทะเบียนไว้ในเครื่อง 
-            if (!foundPatient && window.registeredAppointments) { 
-                const appointmentRecord = window.registeredAppointments.find(app => app.nationalId === searchId); 
-                if (appointmentRecord) { 
-                    foundPatient = { 
-                        id: appointmentRecord.nationalId, 
-                        name: `${appointmentRecord.firstName} ${appointmentRecord.lastName}`, 
-                        phone: appointmentRecord.phone, 
-                        appointments: appointmentRecord.appointments.map(app => ({ 
-                            date: app.date, 
-                            vaccine: app.vaccine, 
-                            hospital: 'รพ.สต.ที่ลงทะเบียน' 
-                        })), 
-                        history: [] 
-                    }; 
-                } 
-            } 
-             
-            if (foundPatient) { 
-                console.log('Found patient in sample data:', foundPatient); 
-                displayPatientInfo(foundPatient); 
-            } else { 
-                console.log('Patient not found anywhere'); 
-                alert('❌ ไม่พบข้อมูลผู้ป่วย\n\n💡 ลองลงทะเบียนนัดหมายก่อน หรือใช้เลขบัตรประชาชน: 1234567890123\n(ข้อมูลตัวอย่างในระบบ Demo)'); 
-                document.getElementById('patientInfo').classList.add('hidden'); 
-            } 
-        } 
-
-
-
-
-
-   function displayPatientInfo(patientData) { 
-    document.getElementById('patientName').textContent = patientData.name; 
-    document.getElementById('patientPhone').textContent = patientData.phone; 
-
-    // --- 1. สร้างตารางนัดหมายพร้อมสถานะ --- 
-    const appointmentTableContainer = document.getElementById('appointmentTableContainer'); 
-    appointmentTableContainer.innerHTML = ''; // ล้างข้อมูลเก่า 
-
-    // [FIX] สร้างฟังก์ชันตัวช่วยเพื่อแปลงวันที่เป็น YYYY-MM-DD โดยใช้มาตรฐาน UTC 
-    const getUTCDateString = (dateInput) => { 
-        if (!dateInput) return null; 
-        const d = new Date(dateInput); 
-        if (isNaN(d.getTime())) return null; 
-         
-        const year = d.getUTCFullYear(); 
-        const month = String(d.getUTCMonth() + 1).padStart(2, '0'); 
-        const day = String(d.getUTCDate()).padStart(2, '0'); 
-         
-        return `${year}-${month}-${day}`; 
-    }; 
-
-    // สร้าง Set ของวันที่ฉีดจริง (ในรูปแบบ YYYY-MM-DD) เพื่อการเปรียบเทียบที่รวดเร็ว 
-    const vaccinationDates = new Set( 
-        (patientData.history || []).map(record => getUTCDateString(record.date)).filter(Boolean) 
-    ); 
-
-    if (patientData.appointments && patientData.appointments.length > 0) { 
-        let tableHtml = ` 
-            <div class="overflow-x-auto rounded-lg border"> 
-                <table class="min-w-full bg-white"> 
-                    <thead class="bg-gray-50"> 
-                        <tr> 
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่นัด (พ.ศ.)</th> 
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อยา</th> 
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th> 
-                        </tr> 
-                    </thead> 
-                    <tbody class="divide-y divide-gray-200"> 
-        `; 
-
-        const today = new Date(); 
-        today.setHours(0, 0, 0, 0); 
-
-        // วนลูปสร้างแต่ละแถวของตารางนัดหมาย 
-        patientData.appointments.forEach(app => { 
-            const appDate = new Date(app.date); 
-            const appDateString = getUTCDateString(app.date); // ใช้ฟังก์ชันใหม่ 
-
-            let statusText = ''; 
-            let statusColorClass = ''; 
-
-            // ตรวจสอบสถานะของนัด 
-            if (vaccinationDates.has(appDateString)) { 
-                statusText = 'ฉีดแล้ว'; 
-                statusColorClass = 'bg-green-100 text-green-800'; 
-            } else if (appDate < today) { 
-                statusText = 'ไม่มาตามนัด'; 
-                statusColorClass = 'bg-red-100 text-red-800'; 
-            } else { 
-                statusText = 'รอฉีด'; 
-                statusColorClass = 'bg-gray-100 text-gray-800'; 
-            } 
-
-            tableHtml += ` 
-                <tr> 
-                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${formatThaiDate(appDate)}</td> 
-                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${app.vaccine}</td> 
-                    <td class="px-4 py-2 whitespace-nowrap text-sm"> 
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColorClass}"> 
-                            ${statusText} 
-                        </span> 
-                    </td> 
-                </tr> 
-            `; 
-        }); 
-
-        tableHtml += `</tbody></table></div>`; 
-        appointmentTableContainer.innerHTML = tableHtml; 
-    } else { 
-        appointmentTableContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ไม่มีข้อมูลนัดหมาย</p>'; 
-    } 
-
-    // --- 2. แสดงประวัติการฉีด (ส่วนนี้ยังคงเดิม) --- 
-    const historyContainer = document.getElementById('vaccineHistory'); 
-    historyContainer.innerHTML = ''; 
-    if (patientData.history && patientData.history.length > 0) { 
-         patientData.history.forEach(record => { 
-            const historyItem = document.createElement('div'); 
-            historyItem.className = 'flex justify-between items-center p-3 bg-white rounded-lg border'; 
-            historyItem.innerHTML = ` 
-                <div> 
-                    <p class="font-semibold text-gray-800">${record.vaccineName || 'N/A'}</p> 
-                    <p class="text-sm text-gray-600">${record.hospital || 'N/A'}</p> 
-                </div> 
-                <span class="text-sm text-gray-500">${formatThaiDate(record.date)}</span> 
-            `; 
-            historyContainer.appendChild(historyItem); 
-        }); 
-    } else { 
-        historyContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีประวัติการฉีดวัคซีน</p>'; 
-    } 
-     
-    document.getElementById('patientInfo').classList.remove('hidden'); 
-} 
-
-
-
-
-
-        // Add vaccine date 
-        function addVaccineDate() { 
-            const dateInput = document.getElementById('vaccineDate'); 
-            const vaccineInput = document.getElementById('vaccineName'); 
-            const siteInput = document.getElementById('injectionSite'); 
-             
-            const date = dateInput.value; 
-            const vaccine = vaccineInput.value; 
-            const site = siteInput.value; 
-             
-            if (date && vaccine && site) { 
-                const vaccineData = { 
-                    date: date, 
-                    vaccine: vaccine, 
-                    site: site 
-                }; 
-                 
-                vaccineDatesArray.push(vaccineData); 
-                updateVaccineDatesDisplay(); 
-                 
-                // Clear inputs 
-                dateInput.value = ''; 
-                vaccineInput.value = ''; 
-                siteInput.value = ''; 
-            } else { 
-                alert('กรุณากรอกข้อมูลให้ครบถ้วน'); 
-            } 
-        } 
-
-        function updateVaccineDatesDisplay() { 
-            const container = document.getElementById('vaccineDates'); 
-            container.innerHTML = ''; 
-             
-            vaccineDatesArray.forEach((vaccineData, index) => { 
-                const dateDiv = document.createElement('div'); 
-                dateDiv.className = 'flex items-center space-x-4 p-4 bg-blue-50 rounded-lg border border-blue-200'; 
-                dateDiv.innerHTML = ` 
-                    <div class="flex-1"> 
-                        <p class="font-medium text-blue-800">วันที่ฉีด: ${formatThaiDate(vaccineData.date)}</p> 
-                        <p class="text-sm text-blue-600">ยา: ${vaccineData.vaccine}</p> 
-                        <p class="text-sm text-blue-600">ตำแหน่งฉีด: ${vaccineData.site}</p> 
-                    </div> 
-                    <button onclick="removeVaccineDate(${index})" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-200"> 
-                        ลบ 
-                    </button> 
-                `; 
-                container.appendChild(dateDiv); 
-            }); 
-        } 
-
-        function removeVaccineDate(index) { 
-            vaccineDatesArray.splice(index, 1); 
-            updateVaccineDatesDisplay(); 
-        } 
-
-        // Generate Calendar 
-        function generateCalendar() { 
-            const calendar = document.getElementById('multiDateCalendar'); 
-            const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
-                              'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']; 
-            const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส']; 
-             
-            const firstDay = new Date(currentYear, currentMonth, 1); 
-            const lastDay = new Date(currentYear, currentMonth + 1, 0); 
-            const startDate = firstDay.getDay(); 
-            const daysInMonth = lastDay.getDate(); 
-             
-            let calendarHTML = ` 
-                <div class="p-4"> 
-                    <div class="flex justify-between items-center mb-4"> 
-                        <button onclick="previousMonth()" class="p-2 hover:bg-gray-100 rounded-lg"> 
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path> 
-                            </svg> 
-                        </button> 
-                        <h3 class="text-lg font-semibold">${monthNames[currentMonth]} ${currentYear}</h3> 
-                        <button onclick="nextMonth()" class="p-2 hover:bg-gray-100 rounded-lg"> 
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path> 
-                            </svg> 
-                        </button> 
-                    </div> 
-                    <div class="grid grid-cols-7 gap-1 mb-2"> 
-            `; 
-             
-            // Day headers 
-            dayNames.forEach(day => { 
-                calendarHTML += `<div class="text-center text-sm font-medium text-gray-600 p-2">${day}</div>`; 
-            }); 
-             
-            calendarHTML += `</div><div class="grid grid-cols-7 gap-1">`; 
-             
-            // Empty cells for days before month starts 
-            for (let i = 0; i < startDate; i++) { 
-                calendarHTML += `<div class="p-2"></div>`; 
-            } 
-             
-            // Days of the month 
-            const today = new Date(); 
-            for (let day = 1; day <= daysInMonth; day++) { 
-                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; 
-                const isToday = today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === day; 
-                const isSelected = selectedDates.includes(dateStr); 
-                const isPast = new Date(currentYear, currentMonth, day) < new Date(today.getFullYear(), today.getMonth(), today.getDate()); 
-                 
-                let classes = 'p-2 text-center cursor-pointer rounded-lg transition-colors duration-200 '; 
-                if (isPast) { 
-                    classes += 'text-gray-400 cursor-not-allowed '; 
-                } else if (isSelected) { 
-                    classes += 'bg-blue-600 text-white hover:bg-blue-700 '; 
-                } else if (isToday) { 
-                    classes += 'bg-blue-100 text-blue-600 hover:bg-blue-200 '; 
-                } else { 
-                    classes += 'hover:bg-gray-100 '; 
-                } 
-                 
-                const onclick = isPast ? '' : `onclick="toggleDate('${dateStr}')"`; 
-                calendarHTML += `<div class="${classes}" ${onclick}>${day}</div>`; 
-            } 
-             
-            calendarHTML += `</div></div>`; 
-            calendar.innerHTML = calendarHTML; 
-             
-            updateSelectedDatesCount(); 
-        } 
-
-        function previousMonth() { 
-            currentMonth--; 
-            if (currentMonth < 0) { 
-                currentMonth = 11; 
-                currentYear--; 
-            } 
-            generateCalendar(); 
-        } 
-
-        function nextMonth() { 
-            currentMonth++; 
-            if (currentMonth > 11) { 
-                currentMonth = 0; 
-                currentYear++; 
-            } 
-            generateCalendar(); 
-        } 
-
-        function toggleDate(dateStr) { 
-            const index = selectedDates.indexOf(dateStr); 
-            if (index > -1) { 
-                selectedDates.splice(index, 1); 
-            } else { 
-                selectedDates.push(dateStr); 
-            } 
-            generateCalendar(); 
-        } 
-
-        function updateSelectedDatesCount() { 
-            document.getElementById('selectedDatesCount').textContent = selectedDates.length; 
-        } 
-
-        // Add selected dates to appointment list 
-        function addSelectedDates() { 
-            const vaccineInput = document.getElementById('appointmentVaccine'); 
-             
-            const vaccine = vaccineInput.value; 
-             
-            if (selectedDates.length === 0) { 
-                alert('กรุณาเลือกวันที่นัดหมาย'); 
-                return; 
-            } 
-             
-            if (!vaccine) { 
-                alert('กรุณาเลือกชื่อยา'); 
-                return; 
-            } 
-             
-            selectedDates.forEach(date => { 
-                const appointmentData = { 
-                    date: date, 
-                    vaccine: vaccine 
-                }; 
-                appointmentDatesArray.push(appointmentData); 
-            }); 
-             
-            updateAppointmentDatesDisplay(); 
-             
-            // Clear selections 
-            selectedDates = []; 
-            vaccineInput.value = ''; 
-            generateCalendar(); 
-        } 
-
-        function updateAppointmentDatesDisplay() { 
-            const container = document.getElementById('appointmentDates'); 
-            container.innerHTML = ''; 
-             
-            appointmentDatesArray.forEach((appointmentData, index) => { 
-                const dateDiv = document.createElement('div'); 
-                dateDiv.className = 'flex items-center space-x-4 p-4 bg-green-50 rounded-lg border border-green-200'; 
-                dateDiv.innerHTML = ` 
-                    <div class="flex-1"> 
-                        <p class="font-medium text-green-800">วันที่นัด: ${formatThaiDate(appointmentData.date)}</p> 
-                        <p class="text-sm text-green-600">ยา: ${appointmentData.vaccine}</p> 
-                    </div> 
-                    <button onclick="removeAppointmentDate(${index})" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition duration-200"> 
-                        ลบ 
-                    </button> 
-                `; 
-                container.appendChild(dateDiv); 
-            }); 
-        } 
-
-        function removeAppointmentDate(index) { 
-            appointmentDatesArray.splice(index, 1); 
-            updateAppointmentDatesDisplay(); 
-        } 
-
-        // Appointment form submission 
-        document.getElementById('appointmentForm').addEventListener('submit', function(e) { 
-            e.preventDefault(); 
-             
-            const formData = { 
-                nationalId: document.getElementById('appointmentNationalId').value, 
-                phone: document.getElementById('appointmentPhone').value, 
-                firstName: document.getElementById('appointmentFirstName').value, 
-                lastName: document.getElementById('appointmentLastName').value, 
-                appointments: appointmentDatesArray 
-            }; 
-             
-            // Save to Google Sheets 
-            saveAppointmentToGoogleSheets(formData); 
-        }); 
-
-        // Save appointment data to Google Sheets 
-        async function saveAppointmentToGoogleSheets(formData) { 
-            const submitButton = document.querySelector('#appointmentForm button[type="submit"]'); 
-            const originalText = submitButton.textContent; 
-             
-            // Show loading state 
-            submitButton.textContent = 'กำลังบันทึก...'; 
-            submitButton.disabled = true; 
-             
-            try { 
-                // Store appointment data locally for search functionality 
-                if (!window.registeredAppointments) { 
-                    window.registeredAppointments = []; 
-                } 
-                 
-                // Add to local storage 
-                const appointmentRecord = { 
-                    nationalId: formData.nationalId, 
-                    firstName: formData.firstName, 
-                    lastName: formData.lastName, 
-                    phone: formData.phone, 
-                    appointments: formData.appointments, 
-                    timestamp: new Date().toLocaleString('th-TH'), 
-                    createdBy: currentUserRole 
-                }; 
-                 
-                window.registeredAppointments.push(appointmentRecord); 
-                 
-                // Prepare data for each appointment date 
-                const appointments = formData.appointments.map(appointment => ({ 
-                    timestamp: new Date().toLocaleString('th-TH'), 
-                    nationalId: formData.nationalId, 
-                    firstName: formData.firstName, 
-                    lastName: formData.lastName, 
-                    phone: formData.phone, 
-                    appointmentDate: formatThaiDate(appointment.date), 
-                    vaccine: appointment.vaccine, 
-                    status: 'รอนัด', 
-                    createdBy: currentUserRole 
-                })); 
-                 
-                // Google Apps Script Web App URL 
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWOncwf4ERzzTjKbIy75DTUpbjZ4OOZGrAH3twmkmd5JFMHiIsNFsgZDY5h6OiHG-a/exec'; 
-                 
-                for (const appointment of appointments) { 
-                    const response = await fetch(GOOGLE_SCRIPT_URL, { 
-                        method: 'POST', 
-                        headers: { 
-                            'Content-Type': 'text/plain', 
-                        }, 
-                        body: JSON.stringify({ 
-                            action: 'saveAppointment', 
-                            data: appointment 
-                        }) 
-                    }); 
-                     
-                    // Log response for debugging 
-                    console.log('Response status:', response.status); 
-                } 
-                 
-                // Success message 
-                alert(`✅ บันทึกนัดหมายเรียบร้อยแล้ว!\n\n📋 รายละเอียด:\n• ผู้ป่วย: ${formData.firstName} ${formData.lastName}\n• เบอร์โทร: ${formData.phone}\n• จำนวนนัด: ${appointments.length} วัน\n\n💾 ข้อมูลถูกบันทึกแล้ว และสามารถค้นหาได้ในแท็บ "ค้นหาผู้ป่วย"`); 
-                 
-                // Reset form 
-                document.getElementById('appointmentForm').reset(); 
-                appointmentDatesArray = []; 
-                updateAppointmentDatesDisplay(); 
-                 
-            } catch (error) { 
-                console.error('Error saving to Google Sheets:', error); 
-                alert('⚠️ เกิดข้อผิดพลาดในการบันทึกข้อมูล\n\nกรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ'); 
-            } finally { 
-                // Reset button state 
-                submitButton.textContent = originalText; 
-                submitButton.disabled = false; 
-            } 
-        } 
-
-        // Register form submission 
-        // Register form submission 
-        document.getElementById('registerForm').addEventListener('submit', function(e) { 
-            e.preventDefault(); 
-             
-            const formData = { 
-                firstName: document.getElementById('firstName').value.trim(), 
-                lastName: document.getElementById('lastName').value.trim(), 
-                phone: document.getElementById('phone').value.trim(), 
-                nationalId: document.getElementById('nationalId').value.trim(), 
-                hospital: document.getElementById('hospital').value, 
-                vaccineDates: vaccineDatesArray 
-            }; 
-             
-            // Validate required fields 
-            if (!formData.firstName || !formData.lastName || !formData.phone || !formData.nationalId || !formData.hospital) { 
-                alert('⚠️ กรุณากรอกข้อมูลผู้ป่วยให้ครบถ้วน'); 
-                return; 
-            } 
-             
-            if (vaccineDatesArray.length === 0) { 
-                alert('⚠️ กรุณาเพิ่มข้อมูลการฉีดวัคซีนอย่างน้อย 1 ครั้ง'); 
-                return; 
-            } 
-             
-            // Save to Google Sheets 
-            savePatientToGoogleSheets(formData); 
-        }); 
-
-        // Save patient data to Google Sheets 
-        async function savePatientToGoogleSheets(formData) { 
-            const submitButton = document.querySelector('#registerForm button[type="submit"]'); 
-            const originalText = submitButton.textContent; 
-             
-            // Show loading state 
-            submitButton.textContent = 'กำลังบันทึก...'; 
-            submitButton.disabled = true; 
-             
-            try { 
-                // Prepare data for each vaccine date 
-                const vaccineRecords = formData.vaccineDates.map(vaccine => ({ 
-                    timestamp: new Date().toLocaleString('th-TH'), 
-                    nationalId: formData.nationalId, 
-                    firstName: formData.firstName, 
-                    lastName: formData.lastName, 
-                    phone: formData.phone, 
-                    hospital: formData.hospital, 
-                    vaccineDate: formatThaiDate(vaccine.date), // Use formatted Thai date 
-                    vaccineName: vaccine.vaccine, 
-                    injectionSite: vaccine.site, 
-                    status: 'ฉีดแล้ว', // Status for this form is always 'ฉีดแล้ว' 
-                    createdBy: currentUserRole 
-                })); 
-                 
-                // Google Apps Script Web App URL from your existing code 
-                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxWOncwf4ERzzTjKbIy75DTUpbjZ4OOZGrAH3twmkmd5JFMHiIsNFsgZDY5h6OiHG-a/exec'; 
-                 
-                for (const record of vaccineRecords) { 
-                    const response = await fetch(GOOGLE_SCRIPT_URL, { 
-                        method: 'POST', 
-                        headers: { 
-                            'Content-Type': 'text/plain', 
-                        }, 
-                        body: JSON.stringify({ 
-                            action: 'savePatient', // Action for patient registration 
-                            data: record 
-                        }) 
-                    }); 
-                     
-                    if (!response.ok) { 
-                        throw new Error(`HTTP error! status: ${response.status}`); 
-                    } 
-                    console.log('Patient save response:', await response.json()); 
-                } 
-                 
-                // Success message 
-                alert(`✅ บันทึกข้อมูลผู้ป่วยเรียบร้อยแล้ว!\n\n📋 รายละเอียด:\n• ผู้ป่วย: ${formData.firstName} ${formData.lastName}\n• สถานที่: ${formData.hospital}\n• จำนวนครั้งที่ฉีด: ${vaccineRecords.length} ครั้ง\n\n💾 ข้อมูลถูกบันทึกลง Google Sheets แล้ว`); 
-                 
-                // Reset form 
-                document.getElementById('registerForm').reset(); 
-                vaccineDatesArray = []; 
-                updateVaccineDatesDisplay(); 
-                 
-            } catch (error) { 
-                console.error('Error saving patient to Google Sheets:', error); 
-                alert('⚠️ เกิดข้อผิดพลาดในการบันทึกข้อมูล\n\nกรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ'); 
-            } finally { 
-                // Reset button state 
-                submitButton.textContent = originalText; 
-                submitButton.disabled = false; 
-            } 
-        } 
-
-
-        // Format phone number input 
-        document.getElementById('phone').addEventListener('input', function(e) { 
-            let value = e.target.value.replace(/\D/g, ''); 
-            if (value.length >= 3 && value.length <= 6) { 
-                value = value.replace(/(\d{3})(\d+)/, '$1-$2'); 
-            } else if (value.length > 6) { 
-                value = value.replace(/(\d{3})(\d{3})(\d+)/, '$1-$2-$3'); 
-            } 
-            e.target.value = value; 
-        }); 
-
-        // Format national ID input 
-        document.getElementById('nationalId').addEventListener('input', function(e) { 
-            let value = e.target.value.replace(/\D/g, ''); 
-            e.target.value = value; 
-        }); 
-
-        document.getElementById('searchId').addEventListener('input', function(e) { 
-            let value = e.target.value.replace(/\D/g, ''); 
-            e.target.value = value; 
-        }); 
-
-        // Format appointment phone number input 
-        document.getElementById('appointmentPhone').addEventListener('input', function(e) { 
-            let value = e.target.value.replace(/\D/g, ''); 
-            if (value.length >= 3 && value.length <= 6) { 
-                value = value.replace(/(\d{3})(\d+)/, '$1-$2'); 
-            } else if (value.length > 6) { 
-                value = value.replace(/(\d{3})(\d{3})(\d+)/, '$1-$2-$3'); 
-            } 
-            e.target.value = value; 
-        }); 
-
-        // Format appointment national ID input 
-        document.getElementById('appointmentNationalId').addEventListener('input', function(e) { 
-            let value = e.target.value.replace(/\D/g, ''); 
-            e.target.value = value; 
-        }); 
-    </script> 
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d03cb227b975d8',t:'MTc1NDgzNjcwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body> 
+    <!-- Container for printing -->
+    <div id="print-container" class="hidden"></div>
+
+    <script>
+        // =================================================================
+        // SCRIPT CONFIGURATION
+        // =================================================================
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyJvCAlvkVLww51VntYTbMDoNzbxfVUxxLfKcknVAG202mtrYVE8Wq9oIhF-8aBVzWM/exec';
+        let currentUserRole = '';
+        let vaccineDatesArray = [];
+        let appointmentDatesArray = [];
+        let selectedDates = [];
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        // =================================================================
+        // INITIALIZATION
+        // =================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const loggedInUserRole = sessionStorage.getItem('userRole');
+            if (loggedInUserRole) {
+                console.log('พบผู้ใช้ใน session:', loggedInUserRole);
+                showMainSystem(loggedInUserRole);
+            }
+            updateCurrentDate();
+            generateCalendar();
+        });
+
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('th-TH', options);
+        }
+
+        // =================================================================
+        // AUTHENTICATION & UI MANAGEMENT
+        // =================================================================
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginButton = this.querySelector('button[type="submit"]');
+            const originalButtonText = loginButton.textContent;
+
+            loginButton.disabled = true;
+            loginButton.textContent = 'กำลังตรวจสอบ...';
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'login', username, password })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    sessionStorage.setItem('userRole', result.role);
+                    showMainSystem(result.role);
+                } else {
+                    alert('❌ ' + (result.message || result.error || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'));
+                }
+            } catch (error) {
+                console.error('Login Error:', error);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+            } finally {
+                loginButton.disabled = false;
+                loginButton.textContent = originalButtonText;
+            }
+        });
+
+        function showMainSystem(role) {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainSystem').classList.remove('hidden');
+            currentUserRole = role;
+            document.getElementById('userRole').textContent = role;
+            document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('show'));
+            if (role === 'แอดมิน') {
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.add('show'));
+            }
+            showTab('search');
+        }
+
+        function logout() {
+            sessionStorage.removeItem('userRole');
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('mainSystem').classList.add('hidden');
+            document.getElementById('loginForm').reset();
+            currentUserRole = '';
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(tab => {
+                tab.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                tab.classList.add('text-gray-600');
+            });
+            document.getElementById(tabName + 'Content').classList.remove('hidden');
+            const activeTab = document.getElementById(tabName + 'Tab');
+            activeTab.classList.remove('text-gray-600');
+            activeTab.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+            if (tabName === 'dashboard') {
+                loadDashboardData();
+            }
+        }
+        
+        // =================================================================
+        // DASHBOARD FUNCTIONS
+        // =================================================================
+        async function loadDashboardData() {
+            const container = document.getElementById('todayAppointments');
+            container.innerHTML = '<p class="text-center text-gray-500">กำลังโหลดข้อมูลนัดหมาย...</p>';
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    redirect: 'follow',
+                    body: JSON.stringify({ action: 'getTodaysAppointments' })
+                });
+                const result = await response.json();
+                if (result.success && result.data) {
+                    container.innerHTML = '';
+                    if (result.data.length > 0) {
+                        result.data.forEach(app => {
+                            const statusColor = app.status === 'ฉีดแล้ว' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                            const appointmentCard = document.createElement('div');
+                            appointmentCard.className = 'flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200';
+                            appointmentCard.innerHTML = `
+                                <div>
+                                    <p class="font-medium text-blue-800">${app.name}</p>
+                                    <p class="text-sm text-blue-600">${app.phone || 'ไม่มีเบอร์โทร'}</p>
+                                    <p class="text-sm text-gray-600">${app.vaccine}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-block px-2 py-1 text-xs rounded-full ${statusColor}">${app.status}</span>
+                                </div>`;
+                            container.appendChild(appointmentCard);
+                        });
+                    } else {
+                        container.innerHTML = '<p class="text-center text-gray-500">วันนี้ไม่มีนัดหมาย</p>';
+                    }
+                } else {
+                    throw new Error(result.error || 'ไม่สามารถโหลดข้อมูลได้');
+                }
+            } catch (error) {
+                console.error('Dashboard Load Error:', error);
+                container.innerHTML = `<p class="text-center text-red-500">เกิดข้อผิดพลาด: ${error.message}</p>`;
+            }
+        }
+
+        // =================================================================
+        // PATIENT SEARCH FUNCTIONS
+        // =================================================================
+        async function searchPatient() {
+            const searchId = document.getElementById('searchId').value.trim();
+            if (!searchId) {
+                alert('กรุณากรอกเลขบัตรประชาชน');
+                return;
+            }
+            const searchButton = document.querySelector('#searchContent button');
+            const originalText = searchButton.textContent;
+            searchButton.textContent = 'กำลังค้นหา...';
+            searchButton.disabled = true;
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'searchPatient', nationalId: searchId })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    displayPatientInfo(result.data);
+                } else {
+                    alert('❌ ' + (result.error || 'ไม่พบข้อมูลผู้ป่วย'));
+                    document.getElementById('patientInfo').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Search Error:', error);
+                alert('เกิดข้อผิดพลาดในการค้นหา');
+            } finally {
+                searchButton.textContent = originalText;
+                searchButton.disabled = false;
+            }
+        }
+
+        function displayPatientInfo(patientData) {
+            document.getElementById('patientName').textContent = patientData.name;
+            document.getElementById('patientPhone').textContent = patientData.phone || 'ไม่มีข้อมูล';
+            
+            const appointmentContainer = document.getElementById('appointmentTableContainer');
+            appointmentContainer.innerHTML = '';
+            const vaccinationDates = new Set((patientData.history || []).map(record => record.date));
+
+            if (patientData.appointments && patientData.appointments.length > 0) {
+                let tableHtml = `
+                    <div class="overflow-x-auto rounded-lg border">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่นัด (พ.ศ.)</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อยา</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ขนาดยา</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ตำแหน่งฉีด</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">`;
+                
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                patientData.appointments.forEach(app => {
+                    const appDate = new Date(app.date);
+                    let statusText = '';
+                    let statusColorClass = '';
+                    if (vaccinationDates.has(app.date)) {
+                        statusText = 'ฉีดแล้ว';
+                        statusColorClass = 'bg-green-100 text-green-800';
+                    } else if (appDate < today) {
+                        statusText = 'ไม่มาตามนัด';
+                        statusColorClass = 'bg-red-100 text-red-800';
+                    } else {
+                        statusText = 'รอฉีด';
+                        statusColorClass = 'bg-gray-100 text-gray-800';
+                    }
+                    tableHtml += `
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${formatThaiDate(app.date)}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${app.vaccine}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${app.dosage || '-'}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${app.injectionSite || '-'}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColorClass}">${statusText}</span>
+                            </td>
+                        </tr>`;
+                });
+                tableHtml += `</tbody></table></div>`;
+                appointmentContainer.innerHTML = tableHtml;
+            } else {
+                appointmentContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ไม่มีข้อมูลนัดหมาย</p>';
+            }
+
+            const historyContainer = document.getElementById('vaccineHistory');
+            historyContainer.innerHTML = '';
+            if (patientData.history && patientData.history.length > 0) {
+                patientData.history.forEach(record => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'flex justify-between items-center p-3 bg-white rounded-lg border';
+                    historyItem.innerHTML = `
+                        <div>
+                            <p class="font-semibold text-gray-800">${record.vaccineName || 'N/A'}</p>
+                            <p class="text-sm text-gray-600">${record.hospital || 'N/A'}</p>
+                        </div>
+                        <span class="text-sm text-gray-500">${formatThaiDate(record.date)}</span>`;
+                    historyContainer.appendChild(historyItem);
+                });
+            } else {
+                historyContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีประวัติการฉีดวัคซีน</p>';
+            }
+            document.getElementById('patientInfo').classList.remove('hidden');
+        }
+
+        // =================================================================
+        // DATA REGISTRATION & APPOINTMENT FUNCTIONS
+        // =================================================================
+        
+        async function lookupPatientForAppointment() {
+            const nationalId = document.getElementById('appointmentNationalId').value.trim();
+            if (!nationalId) {
+                return alert('กรุณากรอกเลขบัตรประชาชนเพื่อค้นหา');
+            }
+
+            const lookupButton = document.querySelector('#appointmentContent button[onclick="lookupPatientForAppointment()"]');
+            const originalButtonText = lookupButton.textContent;
+            lookupButton.textContent = '...';
+            lookupButton.disabled = true;
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'searchPatient', nationalId: nationalId })
+                });
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const patient = result.data;
+                    const nameParts = patient.name.split(' ');
+                    document.getElementById('appointmentFirstName').value = nameParts[0] || '';
+                    document.getElementById('appointmentLastName').value = nameParts.slice(1).join(' ') || '';
+                    document.getElementById('appointmentPhone').value = patient.phone || '';
+
+                    appointmentDatesArray = patient.appointments || [];
+                    updateAppointmentDatesDisplay();
+                    alert('พบข้อมูลผู้ป่วยและโหลดข้อมูลนัดหมายเดิมเรียบร้อยแล้ว');
+                } else {
+                    document.getElementById('appointmentFirstName').value = '';
+                    document.getElementById('appointmentLastName').value = '';
+                    document.getElementById('appointmentPhone').value = '';
+                    appointmentDatesArray = [];
+                    updateAppointmentDatesDisplay();
+                    alert('ไม่พบข้อมูลผู้ป่วย ท่านสามารถลงทะเบียนนัดหมายใหม่ได้เลย');
+                }
+            } catch (error) {
+                console.error('Lookup Error:', error);
+                alert('เกิดข้อผิดพลาดในการค้นหาข้อมูล');
+            } finally {
+                lookupButton.textContent = originalButtonText;
+                lookupButton.disabled = false;
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                nationalId: document.getElementById('nationalId').value.trim(),
+                hospital: document.getElementById('hospital').value,
+                vaccineDates: vaccineDatesArray
+            };
+            if (!formData.firstName || !formData.lastName || !formData.nationalId || !formData.hospital) {
+                return alert('⚠️ กรุณากรอกข้อมูลผู้ป่วยให้ครบถ้วน');
+            }
+            if (vaccineDatesArray.length === 0) {
+                return alert('⚠️ กรุณาเพิ่มข้อมูลการฉีดวัคซีนอย่างน้อย 1 ครั้ง');
+            }
+            savePatientToGoogleSheets(formData);
+        });
+
+        async function savePatientToGoogleSheets(formData) {
+            const submitButton = document.querySelector('#registerForm button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'กำลังบันทึก...';
+            submitButton.disabled = true;
+            try {
+                const vaccineRecords = formData.vaccineDates.map(vaccine => ({
+                    timestamp: new Date().toLocaleString('th-TH'),
+                    nationalId: formData.nationalId,
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    phone: '', // Send empty string for phone
+                    hospital: formData.hospital,
+                    vaccineDate: formatThaiDate(vaccine.date),
+                    vaccineName: vaccine.vaccine,
+                    dosage: vaccine.dosage, 
+                    injectionSite: vaccine.site,
+                    status: 'ฉีดแล้ว',
+                    createdBy: currentUserRole
+                }));
+                for (const record of vaccineRecords) {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify({ action: 'savePatient', data: record })
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                alert(`✅ บันทึกข้อมูลผู้ป่วยเรียบร้อยแล้ว!`);
+                document.getElementById('registerForm').reset();
+                vaccineDatesArray = [];
+                updateVaccineDatesDisplay();
+            } catch (error) {
+                console.error('Error saving patient:', error);
+                alert('⚠️ เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            } finally {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            }
+        }
+        
+        document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                nationalId: document.getElementById('appointmentNationalId').value,
+                phone: document.getElementById('appointmentPhone').value,
+                firstName: document.getElementById('appointmentFirstName').value,
+                lastName: document.getElementById('appointmentLastName').value,
+                appointments: appointmentDatesArray
+            };
+             if (!formData.firstName || !formData.lastName || !formData.phone || !formData.nationalId) {
+                return alert('⚠️ กรุณากรอกข้อมูลผู้ป่วยให้ครบถ้วน');
+            }
+            if (appointmentDatesArray.length === 0) {
+                return alert('⚠️ กรุณาเพิ่มข้อมูลนัดหมายอย่างน้อย 1 ครั้ง');
+            }
+            saveAppointmentToGoogleSheets(formData);
+        });
+
+        async function saveAppointmentToGoogleSheets(formData) {
+            const submitButton = document.querySelector('#appointmentForm button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'กำลังบันทึก...';
+            submitButton.disabled = true;
+            try {
+                const appointments = formData.appointments.map(appointment => ({
+                    timestamp: new Date().toLocaleString('th-TH'),
+                    nationalId: formData.nationalId,
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    phone: formData.phone,
+                    appointmentDate: formatThaiDate(appointment.date),
+                    vaccine: appointment.vaccine,
+                    dosage: appointment.dosage, 
+                    injectionSite: appointment.injectionSite, 
+                    status: 'รอนัด',
+                    createdBy: currentUserRole
+                }));
+                for (const appointment of appointments) {
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify({ action: 'saveAppointment', data: appointment })
+                    });
+                }
+                
+                alert(`✅ บันทึกนัดหมายเรียบร้อยแล้ว!`);
+                printCurrentAppointmentCard(); 
+
+                document.getElementById('appointmentForm').reset();
+                appointmentDatesArray = [];
+                updateAppointmentDatesDisplay();
+            } catch (error) {
+                console.error('Error saving appointment:', error);
+                alert('⚠️ เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            } finally {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            }
+        }
+
+        // =================================================================
+        // HELPER & UTILITY FUNCTIONS
+        // =================================================================
+        
+        function printCurrentAppointmentCard() {
+            const formData = {
+                nationalId: document.getElementById('appointmentNationalId').value,
+                phone: document.getElementById('appointmentPhone').value,
+                firstName: document.getElementById('appointmentFirstName').value,
+                lastName: document.getElementById('appointmentLastName').value,
+                appointments: appointmentDatesArray
+            };
+
+            if (!formData.firstName || !formData.lastName || !formData.nationalId || formData.appointments.length === 0) {
+                return alert('กรุณากรอกข้อมูลผู้ป่วยและเพิ่มรายการนัดหมายก่อนพิมพ์');
+            }
+            printAppointmentCard(formData);
+        }
+
+                // ***** MODIFIED FUNCTION START *****
+        // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
+                // ***** MODIFIED FUNCTION START *****
+        // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
+        function printAppointmentCard(formData) {
+            const printContainer = document.getElementById('print-container');
+            
+            let appointmentRows = '';
+            formData.appointments.forEach(app => {
+                appointmentRows += `
+                    <tr class="border-b">
+                        <td class="py-2 px-4">${formatThaiDate(app.date)}</td>
+                        <td class="py-2 px-4">${app.vaccine}</td>
+                        <td class="py-2 px-4">${app.dosage || '-'}</td>
+                        <td class="py-2 px-4">${app.injectionSite || '-'}</td>
+                    </tr>
+                `;
+            });
+
+             const cardHTML = `
+                <div id="print-card" class="p-0 bg-white flex flex-col h-full text-gray-800 text-sm">
+                    <div class="text-center mb-6">
+                        <h1 class="text-xl font-bold">ใบนัดรับบริการฉีดวัคซีน</h1>
+                        <p class="text-base">โรงพยาบาลส่งเสริมสุขภาพตำบล</p>
+                    </div>
+                    <div class="mb-6">
+                        <h2 class="text-base font-semibold border-b pb-2 mb-3">ข้อมูลผู้ป่วย</h2>
+                        <div class="space-y-1 text-xs">
+                            <div class="flex">
+                                <span class="font-medium text-gray-600 w-1/3">ชื่อ-นามสกุล:</span>
+                                <span class="font-bold">${formData.firstName} ${formData.lastName}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="font-medium text-gray-600 w-1/3">เลขบัตรประชาชน:</span>
+                                <span class="font-bold">${formData.nationalId}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="font-medium text-gray-600 w-1/3">เบอร์โทรศัพท์:</span>
+                                <span class="font-bold">${formData.phone || 'ไม่มีข้อมูล'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-semibold border-b pb-2 mb-3">รายการนัดหมาย</h2>
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="py-2 px-4 font-semibold text-left">วันที่นัด</th>
+                                    <th class="py-2 px-4 font-semibold text-left">วัคซีน</th>
+                                    <th class="py-2 px-4 font-semibold text-left">ขนาดยา</th>
+                                    <th class="py-2 px-4 font-semibold text-left">ตำแหน่งฉีด</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${appointmentRows}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-auto pt-6 text-center text-xs text-gray-500">
+                        <p>กรุณามาตามวันและเวลาที่นัดหมาย และนำใบนัดนี้พร้อมบัตรประชาชนมาด้วยทุกครั้ง</p>
+                        <p>พิมพ์ ณ วันที่: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    </div>
+                </div>
+            `;
+
+            printContainer.innerHTML = cardHTML;
+            window.print();
+        }
+
+
+        function addVaccineDate() {
+            const date = document.getElementById('vaccineDate').value;
+            const vaccine = document.getElementById('vaccineName').value;
+            const dosage = document.getElementById('vaccineDosage').value;
+            const site = document.getElementById('injectionSite').value;
+            if (date && vaccine && dosage && site) {
+                vaccineDatesArray.push({ date, vaccine, dosage, site });
+                updateVaccineDatesDisplay();
+                document.getElementById('vaccineDate').value = '';
+                document.getElementById('vaccineName').value = '';
+                document.getElementById('vaccineDosage').value = '';
+                document.getElementById('injectionSite').value = '';
+            } else {
+                alert('กรุณากรอกข้อมูลการฉีดให้ครบถ้วน');
+            }
+        }
+
+        function updateVaccineDatesDisplay() {
+            const container = document.getElementById('vaccineDates');
+            container.innerHTML = '';
+            vaccineDatesArray.forEach((data, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-4 p-4 bg-blue-50 rounded-lg border border-blue-200';
+                div.innerHTML = `
+                    <div class="flex-1">
+                        <p class="font-medium text-blue-800">วันที่ฉีด: ${formatThaiDate(data.date)}</p>
+                        <p class="text-sm text-blue-600">ยา: ${data.vaccine} (${data.dosage}, ${data.site})</p>
+                    </div>
+                    <button onclick="removeVaccineDate(${index})" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600">ลบ</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        function removeVaccineDate(index) {
+            vaccineDatesArray.splice(index, 1);
+            updateVaccineDatesDisplay();
+        }
+
+        function addSelectedDates() {
+            const vaccine = document.getElementById('appointmentVaccine').value;
+            const dosage = document.getElementById('appointmentDosage').value;
+            const injectionSite = document.getElementById('appointmentInjectionSite').value;
+
+            if (selectedDates.length === 0) return alert('กรุณาเลือกวันที่นัดหมาย');
+            if (!vaccine || !dosage || !injectionSite) return alert('กรุณาเลือกข้อมูลการฉีดให้ครบถ้วน (ยา, ขนาดยา, ตำแหน่ง)');
+            
+            selectedDates.forEach(date => appointmentDatesArray.push({ date, vaccine, dosage, injectionSite }));
+            updateAppointmentDatesDisplay();
+            selectedDates = [];
+            document.getElementById('appointmentVaccine').value = '';
+            document.getElementById('appointmentDosage').value = '';
+            document.getElementById('appointmentInjectionSite').value = '';
+            generateCalendar();
+        }
+
+        function updateAppointmentDatesDisplay() {
+            const container = document.getElementById('appointmentDates');
+            container.innerHTML = '';
+            appointmentDatesArray.forEach((data, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-4 p-4 bg-green-50 rounded-lg border border-green-200';
+                div.innerHTML = `
+                    <div class="flex-1">
+                        <p class="font-medium text-green-800">วันที่นัด: ${formatThaiDate(data.date)}</p>
+                        <p class="text-sm text-green-600">ยา: ${data.vaccine} (${data.dosage}, ${data.injectionSite})</p>
+                    </div>
+                    <button onclick="deleteAppointmentFromSheet(${index})" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600">ลบ</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        async function deleteAppointmentFromSheet(index) {
+            const appointmentToDelete = appointmentDatesArray[index];
+            const nationalId = document.getElementById('appointmentNationalId').value;
+
+            if (!confirm(`คุณต้องการลบนัดหมายวันที่ ${formatThaiDate(appointmentToDelete.date)} ใช่หรือไม่?`)) {
+                return;
+            }
+
+            const deleteButton = event.target;
+            deleteButton.textContent = '...';
+            deleteButton.disabled = true;
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({
+                        action: 'deleteAppointment',
+                        nationalId: nationalId,
+                        appointmentDate: appointmentToDelete.date 
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('ลบนัดหมายเรียบร้อยแล้ว');
+                    appointmentDatesArray.splice(index, 1);
+                    updateAppointmentDatesDisplay();
+                } else {
+                    throw new Error(result.error || 'ไม่สามารถลบข้อมูลได้');
+                }
+            } catch (error) {
+                console.error('Delete Error:', error);
+                alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + error.message);
+                deleteButton.textContent = 'ลบ';
+                deleteButton.disabled = false;
+            }
+        }
+
+
+        function generateCalendar() {
+            const calendar = document.getElementById('multiDateCalendar');
+            const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+            const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            let calendarHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <button type="button" onclick="previousMonth()" class="p-2 hover:bg-gray-100 rounded-lg">&lt;</button>
+                        <h3 class="text-lg font-semibold">${monthNames[currentMonth]} ${currentYear + 543}</h3>
+                        <button type="button" onclick="nextMonth()" class="p-2 hover:bg-gray-100 rounded-lg">&gt;</button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 mb-2">
+                        ${dayNames.map(day => `<div class="text-center text-sm font-medium text-gray-600 p-2">${day}</div>`).join('')}
+                    </div>
+                    <div class="grid grid-cols-7 gap-1">`;
+            for (let i = 0; i < firstDay.getDay(); i++) { calendarHTML += `<div class="p-2"></div>`; }
+            const today = new Date();
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === day;
+                const isSelected = selectedDates.includes(dateStr);
+                const isPast = new Date(currentYear, currentMonth, day) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                let classes = 'p-2 text-center cursor-pointer rounded-lg transition-colors duration-200 ';
+                if (isPast) classes += 'text-gray-400 cursor-not-allowed ';
+                else if (isSelected) classes += 'bg-blue-600 text-white hover:bg-blue-700 ';
+                else if (isToday) classes += 'bg-blue-100 text-blue-600 hover:bg-blue-200 ';
+                else classes += 'hover:bg-gray-100 ';
+                const onclick = isPast ? '' : `onclick="toggleDate('${dateStr}')"`;
+                calendarHTML += `<div class="${classes}" ${onclick}>${day}</div>`;
+            }
+            calendarHTML += `</div></div>`;
+            calendar.innerHTML = calendarHTML;
+            updateSelectedDatesCount();
+        }
+
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            generateCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            generateCalendar();
+        }
+
+        function toggleDate(dateStr) {
+            const index = selectedDates.indexOf(dateStr);
+            if (index > -1) selectedDates.splice(index, 1);
+            else selectedDates.push(dateStr);
+            generateCalendar();
+        }
+
+        function updateSelectedDatesCount() {
+            document.getElementById('selectedDatesCount').textContent = selectedDates.length;
+        }
+
+        function formatThaiDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return 'วันที่ไม่ถูกต้อง';
+            const year = date.getFullYear();
+            const thaiYear = year > 2500 ? year : year + 543;
+            const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+            return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${thaiYear}`;
+        }
+        
+        ['appointmentPhone'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 10) value = value.substring(0, 10);
+                if (value.length >= 3 && value.length <= 6) value = value.replace(/(\d{3})(\d+)/, '$1-$2');
+                else if (value.length > 6) value = value.replace(/(\d{3})(\d{3})(\d+)/, '$1-$2-$3');
+                e.target.value = value;
+            });
+        });
+        ['nationalId', 'appointmentNationalId', 'searchId'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        });
+
+    </script>
+</body>
 </html>
-
-
-
-
