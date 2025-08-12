@@ -643,26 +643,26 @@ function logout() {
 }
 
         // Tab functionality
-        function showTab(tabName) {
-            // Hide all content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-button').forEach(tab => {
-                tab.classList.remove('border-blue-500', 'text-blue-600');
-                tab.classList.add('border-transparent', 'text-gray-500');
-            });
-            
-            // Show selected content
-            document.getElementById(tabName + 'Content').classList.remove('hidden');
-            
-            // Add active class to selected tab
-            const activeTab = document.getElementById(tabName + 'Tab');
-            activeTab.classList.remove('border-transparent', 'text-gray-500');
-            activeTab.classList.add('border-blue-500', 'text-blue-600');
-        }
+function showTab(tabName) {
+    // ซ่อน content ทั้งหมด
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // รีเซ็ตสไตล์ของปุ่มทั้งหมดให้เป็นสถานะ "ไม่ถูกเลือก"
+    document.querySelectorAll('.tab-button').forEach(tab => {
+        tab.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+        tab.classList.add('text-gray-600');
+    });
+    
+    // แสดง content ที่เลือก
+    document.getElementById(tabName + 'Content').classList.remove('hidden');
+    
+    // ตั้งค่าสไตล์ให้ปุ่มที่ถูกเลือก
+    const activeTab = document.getElementById(tabName + 'Tab');
+    activeTab.classList.remove('text-gray-600');
+    activeTab.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+}
 
         // Search patient function (อัพเดทใหม่ - รองรับ Google Sheets)
         async function searchPatient() {
@@ -1303,6 +1303,7 @@ function logout() {
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d03cb227b975d8',t:'MTc1NDgzNjcwOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
+
 
 
 
