@@ -797,6 +797,8 @@
         // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
                 // ***** MODIFIED FUNCTION START *****
         // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
+                // ***** MODIFIED FUNCTION START *****
+        // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
         function printAppointmentCard(formData) {
             const printContainer = document.getElementById('print-container');
             
@@ -804,15 +806,16 @@
             formData.appointments.forEach(app => {
                 appointmentRows += `
                     <tr class="border-b">
-                        <td class="py-2 px-4">${formatThaiDate(app.date)}</td>
-                        <td class="py-2 px-4">${app.vaccine}</td>
-                        <td class="py-2 px-4">${app.dosage || '-'}</td>
-                        <td class="py-2 px-4">${app.injectionSite || '-'}</td>
+                        <td class="py-2 px-4 text-left">${formatThaiDate(app.date)}</td>
+                        <td class="py-2 px-4 text-left">${app.vaccine}</td>
+                        <td class="py-2 px-4 text-left">${app.dosage || '-'}</td>
+                        <td class="py-2 px-4 text-left">${app.injectionSite || '-'}</td>
+                        <td class="py-2 px-4 text-left" style="border-bottom: 1px dotted #999;"></td>
                     </tr>
                 `;
             });
 
-             const cardHTML = `
+            const cardHTML = `
                 <div id="print-card" class="p-0 bg-white flex flex-col h-full text-gray-800 text-sm">
                     <div class="text-center mb-6">
                         <h1 class="text-xl font-bold">ใบนัดรับบริการฉีดวัคซีน</h1>
@@ -844,6 +847,7 @@
                                     <th class="py-2 px-4 font-semibold text-left">วัคซีน</th>
                                     <th class="py-2 px-4 font-semibold text-left">ขนาดยา</th>
                                     <th class="py-2 px-4 font-semibold text-left">ตำแหน่งฉีด</th>
+                                    <th class="py-2 px-4 font-semibold text-left">ลายมือชื่อ</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -851,7 +855,15 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-auto pt-6 text-center text-xs text-gray-500">
+                    
+                    <!-- Signature Block -->
+                    <div class="mt-auto pt-12 text-right text-xs">
+                        <p class="mb-4">....................................................</p>
+                        <p>(....................................................)</p>
+                        <p>ผู้บันทึก/เจ้าหน้าที่</p>
+                    </div>
+
+                    <div class="pt-4 text-center text-xs text-gray-500">
                         <p>กรุณามาตามวันและเวลาที่นัดหมาย และนำใบนัดนี้พร้อมบัตรประชาชนมาด้วยทุกครั้ง</p>
                         <p>พิมพ์ ณ วันที่: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
@@ -861,6 +873,8 @@
             printContainer.innerHTML = cardHTML;
             window.print();
         }
+        // ***** MODIFIED FUNCTION END *****
+
 
 
         function addVaccineDate() {
@@ -1061,3 +1075,4 @@
     </script>
 </body>
 </html>
+
