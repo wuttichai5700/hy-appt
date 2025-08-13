@@ -793,11 +793,7 @@
             printAppointmentCard(formData);
         }
 
-                // ***** MODIFIED FUNCTION START *****
-        // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
-                // ***** MODIFIED FUNCTION START *****
-        // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
-                // ***** MODIFIED FUNCTION START *****
+                     // ***** MODIFIED FUNCTION START *****
         // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
         function printAppointmentCard(formData) {
             const printContainer = document.getElementById('print-container');
@@ -857,10 +853,12 @@
                     </div>
                     
                     <!-- Signature Block -->
-                    <div class="mt-auto pt-12 text-right text-xs">
-                        <p class="mb-4">....................................................</p>
-                        <p>(....................................................)</p>
-                        <p>ผู้บันทึก/เจ้าหน้าที่</p>
+                    <div class="mt-auto pt-16 flex justify-end text-xs">
+                        <div class="text-center">
+                            <p class="mb-4">....................................................</p>
+                            <p>(....................................................)</p>
+                            <p>ผู้บันทึก/เจ้าหน้าที่</p>
+                        </div>
                     </div>
 
                     <div class="pt-4 text-center text-xs text-gray-500">
@@ -874,8 +872,6 @@
             window.print();
         }
         // ***** MODIFIED FUNCTION END *****
-
-
 
         function addVaccineDate() {
             const date = document.getElementById('vaccineDate').value;
@@ -1075,4 +1071,5 @@
     </script>
 </body>
 </html>
+
 
