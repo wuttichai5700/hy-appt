@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -36,16 +37,17 @@
                 margin: 0;
             }
             #print-card {
-                width: 150mm;
-                height: 210mm;
-                padding: 5mm;
-                box-sizing: border-box;
-                font-family: 'Sarabun', sans-serif;
-                border: none; /* Changed from border: 1px solid #ccc */
+        width: 148mm; /* พอดีกับ A5 */
+        min-height: 200mm; /* ไม่ fix 210mm เต็ม */
+        padding: 5mm;
+        box-sizing: border-box;
+        page-break-after: avoid;
+        page-break-before: avoid;
+         border: none;
                 display: flex;
                 flex-direction: column;
-                font-size: 14px; /* Added to control print font size */
-            }
+                overflow: hidden
+    }
         }
     </style>
 </head>
@@ -793,7 +795,7 @@
             printAppointmentCard(formData);
         }
 
-                     // ***** MODIFIED FUNCTION START *****
+              // ***** MODIFIED FUNCTION START *****
         // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
         function printAppointmentCard(formData) {
             const printContainer = document.getElementById('print-container');
@@ -812,14 +814,14 @@
             });
 
             const cardHTML = `
-                <div id="print-card" class="p-0 bg-white flex flex-col h-full text-gray-800 text-sm">
-                    <div class="text-center mb-6">
-                        <h1 class="text-xl font-bold">ใบนัดรับบริการฉีดวัคซีน</h1>
-                        <p class="text-base">โรงพยาบาลส่งเสริมสุขภาพตำบล</p>
+                <div id="print-card" class="p-0 bg-white flex flex-col h-full text-gray-800 text-base">
+                    <div class="text-center mb-8">
+                        <h1 class="text-2xl font-bold">ใบนัดรับบริการฉีดวัคซีน</h1>
+                        <p class="text-lg">โรงพยาบาลส่งเสริมสุขภาพตำบล</p>
                     </div>
-                    <div class="mb-6">
-                        <h2 class="text-base font-semibold border-b pb-2 mb-3">ข้อมูลผู้ป่วย</h2>
-                        <div class="space-y-1 text-xs">
+                    <div class="mb-8">
+                        <h2 class="text-lg font-semibold border-b pb-2 mb-4">ข้อมูลผู้ป่วย</h2>
+                        <div class="space-y-2 text-sm">
                             <div class="flex">
                                 <span class="font-medium text-gray-600 w-1/3">ชื่อ-นามสกุล:</span>
                                 <span class="font-bold">${formData.firstName} ${formData.lastName}</span>
@@ -835,8 +837,8 @@
                         </div>
                     </div>
                     <div>
-                        <h2 class="text-base font-semibold border-b pb-2 mb-3">รายการนัดหมาย</h2>
-                        <table class="w-full text-left border-collapse text-xs">
+                        <h2 class="text-lg font-semibold border-b pb-2 mb-4">รายการนัดหมาย</h2>
+                        <table class="w-full text-left border-collapse text-sm">
                             <thead>
                                 <tr class="bg-gray-100">
                                     <th class="py-2 px-4 font-semibold text-left">วันที่นัด</th>
@@ -853,9 +855,8 @@
                     </div>
                     
                     <!-- Signature Block -->
-                    <div class="mt-auto pt-16 flex justify-end text-xs">
+                    <div class="mt-auto pt-16 flex justify-end text-sm">
                         <div class="text-center">
-                        <br> <br>
                             <p class="mb-4">....................................................</p>
                             <p>(....................................................)</p>
                             <p>ผู้บันทึก/เจ้าหน้าที่</p>
@@ -870,9 +871,14 @@
             `;
 
             printContainer.innerHTML = cardHTML;
-            window.print();
+            
+            // Add a short delay to allow the browser to render the new layout
+            setTimeout(() => {
+                window.print();
+            }, 100); // 100 milliseconds delay
         }
         // ***** MODIFIED FUNCTION END *****
+
 
         function addVaccineDate() {
             const date = document.getElementById('vaccineDate').value;
