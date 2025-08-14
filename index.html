@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -8,20 +7,147 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Sarabun', sans-serif; 
+        /* --- Base and Main System Styles --- */
+        body { 
+            font-family: 'Sarabun', sans-serif;
+            transition: background-color 0.5s ease;
         }
-        
+              
         .admin-only { display: none; }
         .admin-only.show { display: block; }
 
-        /* Styles for printing appointment card */
+        /* --- New Login Page Styles --- */
+        .login-body {
+            background: linear-gradient(to bottom right, #1e3a8a, #312e81);
+        }
+
+        /* Frosted Card Effect */
+        .frosted-card {
+            background-color: rgba(255, 255, 255, 0.15);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem; /* rounded-2xl */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Input Field Style */
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem; /* px-4 py-3 */
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(0, 0, 0, 0.2);
+            color: white;
+            transition: all 0.2s ease-in-out;
+        }
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(96, 165, 250, 0.8); /* blue-400 */
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3); /* ring */
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Login Button Style */
+        .login-button {
+            width: 100%;
+            background-color: #3b82f6; /* bg-blue-600 */
+            color: white;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 500; /* font-medium */
+            transition: all 0.2s ease-in-out;
+            transform: scale(1);
+        }
+        .login-button:hover {
+            background-color: #2563eb; /* bg-blue-700 */
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .login-button:active {
+            transform: scale(0.98);
+        }
+
+        /* --- Animation Keyframes --- */
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 0.6s ease-out forwards;
+            opacity: 0; /* Start hidden */
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 4s infinite ease-in-out;
+        }
+
+        /* --- Animated Background --- */
+        #background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: move-bubble 15s infinite ease-in-out alternate;
+        }
+
+        @keyframes move-bubble {
+            from {
+                transform: translateY(0) rotate(0deg);
+            }
+            to {
+                transform: translateY(-120vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .bubble:nth-child(1) { width: 80px; height: 80px; left: 10%; animation-duration: 25s; }
+        .bubble:nth-child(2) { width: 20px; height: 20px; left: 20%; animation-duration: 12s; animation-delay: 2s; }
+        .bubble:nth-child(3) { width: 50px; height: 50px; left: 35%; animation-duration: 18s; animation-delay: 4s; }
+        .bubble:nth-child(4) { width: 100px; height: 100px; left: 50%; animation-duration: 22s; animation-delay: 0s; }
+        .bubble:nth-child(5) { width: 35px; height: 35px; left: 55%; animation-duration: 16s; animation-delay: 1s; }
+        .bubble:nth-child(6) { width: 45px; height: 45px; left: 65%; animation-duration: 20s; animation-delay: 3s; }
+        .bubble:nth-child(7) { width: 90px; height: 90px; left: 75%; animation-duration: 28s; animation-delay: 2s; }
+        .bubble:nth-child(8) { width: 25px; height: 25px; left: 80%; animation-duration: 14s; animation-delay: 5s; }
+        .bubble:nth-child(9) { width: 15px; height: 15px; left: 90%; animation-duration: 11s; animation-delay: 0s; }
+        .bubble:nth-child(10) { width: 60px; height: 60px; left: 25%; animation-duration: 19s; animation-delay: 6s; }
+
+        /* --- Print Styles --- */
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            #print-container, #print-container * {
-                visibility: visible;
-            }
+            body * { visibility: hidden; }
+            #print-container, #print-container * { visibility: visible; }
             #print-container {
                 position: absolute;
                 left: 0;
@@ -37,62 +163,67 @@
                 margin: 0;
             }
             #print-card {
-        width: 148mm; /* พอดีกับ A5 */
-        min-height: 200mm; /* ไม่ fix 210mm เต็ม */
-        padding: 5mm;
-        box-sizing: border-box;
-        page-break-after: avoid;
-        page-break-before: avoid;
-         border: none;
+                width: 148mm;
+                min-height: 200mm;
+                padding: 5mm;
+                box-sizing: border-box;
+                page-break-after: avoid;
+                page-break-before: avoid;
+                border: none;
                 display: flex;
                 flex-direction: column;
-                overflow: hidden
-    }
+                overflow: hidden;
+            }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+<body class="login-body">
+
+    <!-- Animated Background -->
+    <div id="background-animation">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+    </div>
 
     <!-- Login Page -->
     <div id="loginPage" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+        <div id="loginCard" class="frosted-card p-8 w-full max-w-md animate-fade-in-up">
             <div class="text-center mb-8">
-                <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-white/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse-slow" style="animation-delay: 0.2s;">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
                     </svg>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">ระบบลงทะเบียนวัคซีน</h1>
-                <p class="text-gray-600">สำหรับเจ้าหน้าที่และพยาบาล</p>
+                <h1 class="text-3xl font-bold text-white mb-2 animate-fade-in-up" style="animation-delay: 0.3s;">ระบบลงทะเบียนวัคซีน</h1>
+                <p class="text-blue-200 animate-fade-in-up" style="animation-delay: 0.4s;">สำหรับเจ้าหน้าที่และพยาบาล</p>
             </div>
             
-            <form id="loginForm" class="space-y-6">
+            <form id="loginForm" class="space-y-6 animate-fade-in-up" style="animation-delay: 0.5s;">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ใช้</label>
-                    <input type="text" id="username" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="กรอกชื่อผู้ใช้">
+                    <label class="block text-sm font-medium text-blue-100 mb-2">ชื่อผู้ใช้</label>
+                    <input type="text" id="username" class="input-field" placeholder="กรอกชื่อผู้ใช้">
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">รหัสผ่าน</label>
-                    <input type="password" id="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="กรอกรหัสผ่าน">
+                    <label class="block text-sm font-medium text-blue-100 mb-2">รหัสผ่าน</label>
+                    <input type="password" id="password" class="input-field" placeholder="กรอกรหัสผ่าน">
                 </div>
                 
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200">
+                <button type="submit" class="login-button">
                     เข้าสู่ระบบ
                 </button>
             </form>
             
-            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-                <p class="text-sm text-gray-600 mb-2"><strong>Demo Accounts:</strong></p>
-                <p class="text-xs text-gray-500">👨‍⚕️ พยาบาล: nurse1 / password123</p>
-                <p class="text-xs text-gray-500">👩‍💼 แอดมิน: admin1 / admin123</p>
+            <div class="mt-6 p-4 bg-black/20 rounded-lg animate-fade-in-up" style="animation-delay: 0.6s;">
+                <p class="text-sm text-white mb-2"><strong>Demo Accounts:</strong></p>
+                <p class="text-xs text-blue-300">👨‍⚕️ พยาบาล: nurse1 / password123</p>
+                <p class="text-xs text-blue-300">👩‍💼 แอดมิน: admin1 / admin123</p>
             </div>
         </div>
     </div>
 
     <!-- Main Dashboard -->
     <div id="mainSystem" class="hidden">
-        <!-- Header -->
         <header class="bg-white shadow-sm border-b">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
@@ -117,7 +248,6 @@
             </div>
         </header>
 
-        <!-- Navigation Tabs -->
         <div class="py-4">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="bg-blue-200 rounded-xl p-1 flex justify-center w-fit mx-auto shadow-inner">
@@ -131,9 +261,7 @@
             </div>
         </div>
 
-        <!-- Content Area -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <!-- Search Patient Tab -->
             <div id="searchContent" class="tab-content">
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">🔍 ค้นหาข้อมูลผู้ป่วย</h2>
@@ -160,15 +288,11 @@
                                 </div>
                                 <div class="col-span-1 md:col-span-2">
                                     <h4 class="font-semibold text-gray-800 mb-2">ตารางนัดหมาย</h4>
-                                    <div id="appointmentTableContainer">
-                                        <!-- Appointment table will be generated here -->
-                                    </div>
+                                    <div id="appointmentTableContainer"></div>
                                 </div>
-                            </div>
-                            <div class="mt-6">
-                                <h4 class="font-semibold text-gray-800 mb-3">ประวัติการฉีดวัคซีน</h4>
-                                <div class="space-y-2" id="vaccineHistory">
-                                    <!-- Vaccine history will be generated here -->
+                                <div class="col-span-1 md:col-span-2">
+                                    <h4 class="font-semibold text-gray-800 mb-3">ประวัติการฉีดวัคซีน</h4>
+                                    <div class="space-y-2" id="vaccineHistory"></div>
                                 </div>
                             </div>
                         </div>
@@ -176,7 +300,6 @@
                 </div>
             </div>
 
-            <!-- Appointment Registration Tab -->
             <div id="appointmentContent" class="tab-content hidden">
                  <div class="bg-white rounded-xl shadow-lg p-6">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">📅 ลงทะเบียนนัดหมาย (สำหรับแอดมิน)</h2>
@@ -207,9 +330,7 @@
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">เลือกวันที่นัด (สามารถเลือกได้หลายวัน)</label>
                             <div class="bg-gray-50 p-4 rounded-lg">
-                                <div id="multiDateCalendar" class="max-w-md mx-auto bg-white rounded-lg shadow-sm border">
-                                    <!-- Calendar will be generated here -->
-                                </div>
+                                <div id="multiDateCalendar" class="max-w-md mx-auto bg-white rounded-lg shadow-sm border"></div>
                                 <div class="mt-4 text-center">
                                     <p class="text-sm text-gray-600">คลิกวันที่เพื่อเลือก/ยกเลิก (เลือกแล้ว: <span id="selectedDatesCount">0</span> วัน)</p>
                                 </div>
@@ -246,12 +367,10 @@
                                 พิมพ์ใบนัด
                             </button>
                         </div>
-
                     </form>
                 </div>
             </div>
 
-            <!-- Register Patient Tab -->
             <div id="registerContent" class="tab-content hidden">
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">📝 ลงทะเบียนข้อมูลผู้ป่วย</h2>
@@ -330,24 +449,17 @@
                 </div>
             </div>
 
-            <!-- Dashboard Tab -->
-            <!-- ***** MODIFIED SECTION START ***** -->
             <div id="dashboardContent" class="tab-content hidden">
                 <div class="max-w-3xl mx-auto">
                     <div class="bg-white rounded-xl shadow-lg p-6">
                         <h2 class="text-2xl font-bold text-gray-800 mb-6">📊 นัดหมายวันนี้</h2>
-                        <div class="space-y-4" id="todayAppointments">
-                            <!-- Today's appointments will be generated here -->
-                        </div>
+                        <div class="space-y-4" id="todayAppointments"></div>
                     </div>
                 </div>
             </div>
-            <!-- ***** MODIFIED SECTION END ***** -->
-
         </main>
     </div>
     
-    <!-- Container for printing -->
     <div id="print-container" class="hidden"></div>
 
     <script>
@@ -368,11 +480,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             const loggedInUserRole = sessionStorage.getItem('userRole');
             if (loggedInUserRole) {
-                console.log('พบผู้ใช้ใน session:', loggedInUserRole);
                 showMainSystem(loggedInUserRole);
+            } else {
+                // Ensure login page elements are visible and body has correct class
+                document.body.className = 'login-body';
+                document.getElementById('loginPage').classList.remove('hidden');
+                document.getElementById('background-animation').classList.remove('hidden');
             }
-            updateCurrentDate();
-            generateCalendar();
         });
 
         function updateCurrentDate() {
@@ -417,21 +531,40 @@
         });
 
         function showMainSystem(role) {
+            // Change body class for the main system view
+            document.body.className = 'bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen';
+            
+            // Hide login elements
             document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('background-animation').classList.add('hidden');
+            
+            // Show main system
             document.getElementById('mainSystem').classList.remove('hidden');
+            
             currentUserRole = role;
             document.getElementById('userRole').textContent = role;
             document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('show'));
             if (role === 'แอดมิน') {
                 document.querySelectorAll('.admin-only').forEach(el => el.classList.add('show'));
             }
+            updateCurrentDate();
+            generateCalendar();
             showTab('search');
         }
 
         function logout() {
             sessionStorage.removeItem('userRole');
-            document.getElementById('loginPage').classList.remove('hidden');
+            
+            // Change body class back to the login view
+            document.body.className = 'login-body';
+
+            // Hide main system
             document.getElementById('mainSystem').classList.add('hidden');
+            
+            // Show login elements
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('background-animation').classList.remove('hidden');
+            
             document.getElementById('loginForm').reset();
             currentUserRole = '';
         }
@@ -450,7 +583,7 @@
                 loadDashboardData();
             }
         }
-        
+
         // =================================================================
         // DASHBOARD FUNCTIONS
         // =================================================================
@@ -610,7 +743,6 @@
         // =================================================================
         // DATA REGISTRATION & APPOINTMENT FUNCTIONS
         // =================================================================
-        
         async function lookupPatientForAppointment() {
             const nationalId = document.getElementById('appointmentNationalId').value.trim();
             if (!nationalId) {
@@ -715,7 +847,7 @@
                 submitButton.disabled = false;
             }
         }
-        
+         
         document.getElementById('appointmentForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = {
@@ -779,7 +911,6 @@
         // =================================================================
         // HELPER & UTILITY FUNCTIONS
         // =================================================================
-        
         function printCurrentAppointmentCard() {
             const formData = {
                 nationalId: document.getElementById('appointmentNationalId').value,
@@ -795,8 +926,6 @@
             printAppointmentCard(formData);
         }
 
-              // ***** MODIFIED FUNCTION START *****
-        // ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
         function printAppointmentCard(formData) {
             const printContainer = document.getElementById('print-container');
             
@@ -872,13 +1001,10 @@
 
             printContainer.innerHTML = cardHTML;
             
-            // Add a short delay to allow the browser to render the new layout
             setTimeout(() => {
                 window.print();
-            }, 100); // 100 milliseconds delay
+            }, 100);
         }
-        // ***** MODIFIED FUNCTION END *****
-
 
         function addVaccineDate() {
             const date = document.getElementById('vaccineDate').value;
@@ -989,7 +1115,6 @@
             }
         }
 
-
         function generateCalendar() {
             const calendar = document.getElementById('multiDateCalendar');
             const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -1059,7 +1184,7 @@
             const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
             return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${thaiYear}`;
         }
-        
+         
         ['appointmentPhone'].forEach(id => {
             document.getElementById(id).addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\D/g, '');
@@ -1074,10 +1199,6 @@
                 e.target.value = e.target.value.replace(/\D/g, '');
             });
         });
-
     </script>
 </body>
 </html>
-
-
-
