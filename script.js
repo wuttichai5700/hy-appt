@@ -1,0 +1,795 @@
+
+        // =================================================================
+        // SCRIPT CONFIGURATION
+        // =================================================================
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2m91xD4NHTEcqr-2G_CQ8FpmZ-_DcD6ZrWPONE_GbquonoK4za6_kbAsxSlaeClQZ/exec';
+        let currentUserRole = '';
+        let vaccineDatesArray = [];
+        let appointmentDatesArray = [];
+        let selectedDates = [];
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        // =================================================================
+        // INITIALIZATION
+        // =================================================================
+        // ... (โค้ดส่วนอื่น ๆ) ...
+document.addEventListener('DOMContentLoaded', function() {
+    const loggedInUserRole = sessionStorage.getItem('userRole');
+    const loggedInUserName = sessionStorage.getItem('userName'); // 🟢 ดึงชื่อมาจาก sessionStorage
+    
+    if (loggedInUserRole) {
+        // 🟢 ส่ง role และ name ไปแสดงผล
+        showMainSystem(loggedInUserRole, loggedInUserName); 
+    } else {
+        document.body.className = 'login-body';
+        document.getElementById('loginPage').classList.remove('hidden');
+        document.getElementById('background-animation').classList.remove('hidden');
+    }
+});
+// ... (โค้ดส่วนอื่น ๆ) ...
+
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('th-TH', options);
+        }
+
+        // =================================================================
+        // AUTHENTICATION & UI MANAGEMENT
+        // =================================================================
+       // ... (โค้ดส่วนอื่น ๆ) ...
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const loginButton = this.querySelector('button[type="submit"]');
+    const originalButtonText = loginButton.textContent;
+
+    loginButton.disabled = true;
+    loginButton.textContent = 'กำลังตรวจสอบ...';
+
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'login', username, password })
+        });
+        const result = await response.json();
+        if (result.success) {
+            sessionStorage.setItem('userRole', result.role);
+            sessionStorage.setItem('userName', result.name); // 🟢 บันทึกชื่อลงใน sessionStorage
+            
+            // 🟢 ส่งค่า role และ name ไปให้ฟังก์ชัน showMainSystem
+            showMainSystem(result.role, result.name); 
+
+        } else {
+            alert('❌ ' + (result.message || result.error || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'));
+        }
+    } catch (error) {
+        console.error('Login Error:', error);
+        alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
+    } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = originalButtonText;
+    }
+});
+
+// ... (โค้ดส่วนอื่น ๆ) ...
+
+       // ***** MODIFIED FUNCTION START *****
+// ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
+
+function showMainSystem(role, name) { // 🟢 เพิ่มพารามิเตอร์ name
+    document.body.className = 'bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen';
+    
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('background-animation').classList.add('hidden');
+    
+    document.getElementById('mainSystem').classList.remove('hidden');
+    
+    currentUserRole = role;
+    
+    // 🟢 สร้างข้อความที่จะแสดงผล โดยเช็คก่อนว่ามีชื่อส่งมาหรือไม่
+    let userDisplay = role; // ค่าเริ่มต้นคือแสดงแค่ role
+    if (name) {
+        userDisplay = `${role}: ${name}`; // ถ้่ามีชื่อ ให้แสดงเป็น "Role: Name"
+    }
+    document.getElementById('userRole').textContent = userDisplay; // นำข้อความไปแสดง
+
+    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('show'));
+    if (role === 'แอดมิน') {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('show'));
+    }
+    updateCurrentDate();
+    generateCalendar();
+    showTab('search');
+}
+
+// ***** MODIFIED FUNCTION END *****
+
+        function logout() {
+            sessionStorage.removeItem('userRole');
+            
+            // Change body class back to the login view
+            document.body.className = 'login-body';
+
+            // Hide main system
+            document.getElementById('mainSystem').classList.add('hidden');
+            
+            // Show login elements
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('background-animation').classList.remove('hidden');
+            
+            document.getElementById('loginForm').reset();
+            currentUserRole = '';
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(tab => {
+                tab.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                tab.classList.add('text-gray-600');
+            });
+            document.getElementById(tabName + 'Content').classList.remove('hidden');
+            const activeTab = document.getElementById(tabName + 'Tab');
+            activeTab.classList.remove('text-gray-600');
+            activeTab.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+            if (tabName === 'dashboard') {
+                loadDashboardData();
+            }
+        }
+
+        // =================================================================
+        // DASHBOARD FUNCTIONS
+        // =================================================================
+        async function loadDashboardData() {
+            const container = document.getElementById('todayAppointments');
+            container.innerHTML = '<p class="text-center text-gray-500">กำลังโหลดข้อมูลนัดหมาย...</p>';
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    redirect: 'follow',
+                    body: JSON.stringify({ action: 'getTodaysAppointments' })
+                });
+                const result = await response.json();
+                if (result.success && result.data) {
+                    container.innerHTML = '';
+                    if (result.data.length > 0) {
+                        result.data.forEach(app => {
+                            const statusColor = app.status === 'ฉีดแล้ว' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                            const appointmentCard = document.createElement('div');
+                            appointmentCard.className = 'flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200';
+                            appointmentCard.innerHTML = `
+                                <div>
+                                    <p class="font-medium text-blue-800">${app.name}</p>
+                                    <p class="text-sm text-blue-600">${app.phone || 'ไม่มีเบอร์โทร'}</p>
+                                    <p class="text-sm text-gray-600">${app.vaccine}</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-block px-2 py-1 text-xs rounded-full ${statusColor}">${app.status}</span>
+                                </div>`;
+                            container.appendChild(appointmentCard);
+                        });
+                    } else {
+                        container.innerHTML = '<p class="text-center text-gray-500">วันนี้ไม่มีนัดหมาย</p>';
+                    }
+                } else {
+                    throw new Error(result.error || 'ไม่สามารถโหลดข้อมูลได้');
+                }
+            } catch (error) {
+                console.error('Dashboard Load Error:', error);
+                container.innerHTML = `<p class="text-center text-red-500">เกิดข้อผิดพลาด: ${error.message}</p>`;
+            }
+        }
+
+        // =================================================================
+        // PATIENT SEARCH FUNCTIONS
+        // =================================================================
+        async function searchPatient() {
+            const searchId = document.getElementById('searchId').value.trim();
+            if (!searchId) {
+                alert('กรุณากรอกเลขบัตรประชาชน');
+                return;
+            }
+            const searchButton = document.querySelector('#searchContent button');
+            const originalText = searchButton.textContent;
+            searchButton.textContent = 'กำลังค้นหา...';
+            searchButton.disabled = true;
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'searchPatient', nationalId: searchId })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    displayPatientInfo(result.data);
+                } else {
+                    alert('❌ ' + (result.error || 'ไม่พบข้อมูลผู้ป่วย'));
+                    document.getElementById('patientInfo').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Search Error:', error);
+                alert('เกิดข้อผิดพลาดในการค้นหา');
+            } finally {
+                searchButton.textContent = originalText;
+                searchButton.disabled = false;
+            }
+        }
+
+// ***** MODIFIED FUNCTION START *****
+// ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
+
+function displayPatientInfo(patientData) {
+    document.getElementById('patientName').textContent = patientData.name;
+    document.getElementById('patientPhone').textContent = patientData.phone || 'ไม่มีข้อมูล';
+    
+    const appointmentContainer = document.getElementById('appointmentTableContainer');
+    appointmentContainer.innerHTML = '';
+    const vaccinationDates = new Set((patientData.history || []).map(record => record.date));
+
+    if (patientData.appointments && patientData.appointments.length > 0) {
+        let tableHtml = `
+            <div class="overflow-x-auto rounded-lg border">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่นัด (พ.ศ.)</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อยา</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ขนาดยา</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ตำแหน่งฉีด</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ผู้ลงทะเบียนนัดหมาย</th> <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ผู้ฉีด</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">`;
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        patientData.appointments.forEach(app => {
+            const appDate = new Date(app.date);
+            let statusText = '';
+            let statusColorClass = '';
+            let recorderName = ''; 
+
+            if (vaccinationDates.has(app.date)) {
+                statusText = 'ฉีดแล้ว';
+                statusColorClass = 'bg-green-100 text-green-800';
+                const historyRecord = patientData.history.find(h => h.date === app.date);
+                if (historyRecord && historyRecord.createdBy) {
+                    recorderName = historyRecord.createdBy;
+                } else {
+                    recorderName = app.createdBy || '-';
+                }
+            } else if (appDate < today) {
+                statusText = 'ไม่มาตามนัด';
+                statusColorClass = 'bg-red-100 text-red-800';
+            } else {
+                statusText = 'รอฉีด';
+                statusColorClass = 'bg-gray-100 text-gray-800';
+            }
+            
+            tableHtml += `
+                <tr>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${formatThaiDate(app.date)}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${app.vaccine}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${app.dosage || '-'}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${app.injectionSite || '-'}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${app.createdBy || '-'}</td> <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-700">${recorderName}</td>
+                    <td class="px-4 py-2 whitespace-nowrap text-sm">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColorClass}">${statusText}</span>
+                    </td>
+                </tr>`;
+        });
+        tableHtml += `</tbody></table></div>`;
+        appointmentContainer.innerHTML = tableHtml;
+    } else {
+        appointmentContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ไม่มีข้อมูลนัดหมาย</p>';
+    }
+
+    const historyContainer = document.getElementById('vaccineHistory');
+    historyContainer.innerHTML = '';
+    if (patientData.history && patientData.history.length > 0) {
+        patientData.history.forEach(record => {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'flex justify-between items-center p-3 bg-white rounded-lg border';
+            historyItem.innerHTML = `
+                <div>
+                    <p class="font-semibold text-gray-800">${record.vaccineName || 'N/A'}</p>
+                    <p class="text-sm text-gray-600">${record.hospital || 'N/A'}</p>
+                </div>
+                <span class="text-sm text-gray-500">${formatThaiDate(record.date)}</span>`;
+            historyContainer.appendChild(historyItem);
+        });
+    } else {
+        historyContainer.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีประวัติการฉีดวัคซีน</p>';
+    }
+    document.getElementById('patientInfo').classList.remove('hidden');
+}
+
+// ***** MODIFIED FUNCTION END *****
+        // =================================================================
+        // DATA REGISTRATION & APPOINTMENT FUNCTIONS
+        // =================================================================
+        async function lookupPatientForAppointment() {
+            const nationalId = document.getElementById('appointmentNationalId').value.trim();
+            if (!nationalId) {
+                return alert('กรุณากรอกเลขบัตรประชาชนเพื่อค้นหา');
+            }
+
+            const lookupButton = document.querySelector('#appointmentContent button[onclick="lookupPatientForAppointment()"]');
+            const originalButtonText = lookupButton.textContent;
+            lookupButton.textContent = '...';
+            lookupButton.disabled = true;
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'searchPatient', nationalId: nationalId })
+                });
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const patient = result.data;
+                    const nameParts = patient.name.split(' ');
+                    document.getElementById('appointmentFirstName').value = nameParts[0] || '';
+                    document.getElementById('appointmentLastName').value = nameParts.slice(1).join(' ') || '';
+                    document.getElementById('appointmentPhone').value = patient.phone || '';
+
+                    appointmentDatesArray = patient.appointments || [];
+                    updateAppointmentDatesDisplay();
+                    alert('พบข้อมูลผู้ป่วยและโหลดข้อมูลนัดหมายเดิมเรียบร้อยแล้ว');
+                } else {
+                    document.getElementById('appointmentFirstName').value = '';
+                    document.getElementById('appointmentLastName').value = '';
+                    document.getElementById('appointmentPhone').value = '';
+                    appointmentDatesArray = [];
+                    updateAppointmentDatesDisplay();
+                    alert('ไม่พบข้อมูลผู้ป่วย ท่านสามารถลงทะเบียนนัดหมายใหม่ได้เลย');
+                }
+            } catch (error) {
+                console.error('Lookup Error:', error);
+                alert('เกิดข้อผิดพลาดในการค้นหาข้อมูล');
+            } finally {
+                lookupButton.textContent = originalButtonText;
+                lookupButton.disabled = false;
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                nationalId: document.getElementById('nationalId').value.trim(),
+                hospital: document.getElementById('hospital').value,
+                vaccineDates: vaccineDatesArray
+            };
+            if (!formData.firstName || !formData.lastName || !formData.nationalId || !formData.hospital) {
+                return alert('⚠️ กรุณากรอกข้อมูลผู้ป่วยให้ครบถ้วน');
+            }
+            if (vaccineDatesArray.length === 0) {
+                return alert('⚠️ กรุณาเพิ่มข้อมูลการฉีดวัคซีนอย่างน้อย 1 ครั้ง');
+            }
+            savePatientToGoogleSheets(formData);
+        });
+
+        async function savePatientToGoogleSheets(formData) {
+    const submitButton = document.querySelector('#registerForm button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.textContent = 'กำลังบันทึก...';
+    submitButton.disabled = true;
+    try {
+        const vaccineRecords = formData.vaccineDates.map(vaccine => ({
+            timestamp: new Date().toLocaleString('th-TH'),
+            nationalId: formData.nationalId,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: '', // Send empty string for phone
+            hospital: formData.hospital,
+            vaccineDate: formatThaiDate(vaccine.date),
+            vaccineName: vaccine.vaccine,
+            dosage: vaccine.dosage, 
+            injectionSite: vaccine.site,
+            status: 'ฉีดแล้ว',
+            // 🟢 เปลี่ยนจาก currentUserRole เป็น vaccine.recorder
+            createdBy: vaccine.recorder 
+        }));
+        for (const record of vaccineRecords) {
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'savePatient', data: record })
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        alert(`✅ บันทึกข้อมูลผู้ป่วยเรียบร้อยแล้ว!`);
+        document.getElementById('registerForm').reset();
+        vaccineDatesArray = [];
+        updateVaccineDatesDisplay();
+    } catch (error) {
+        console.error('Error saving patient:', error);
+        alert('⚠️ เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+    } finally {
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+    }
+}
+         
+        document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = {
+                nationalId: document.getElementById('appointmentNationalId').value,
+                phone: document.getElementById('appointmentPhone').value,
+                firstName: document.getElementById('appointmentFirstName').value,
+                lastName: document.getElementById('appointmentLastName').value,
+                appointments: appointmentDatesArray
+            };
+             if (!formData.firstName || !formData.lastName || !formData.phone || !formData.nationalId) {
+                return alert('⚠️ กรุณากรอกข้อมูลผู้ป่วยให้ครบถ้วน');
+            }
+            if (appointmentDatesArray.length === 0) {
+                return alert('⚠️ กรุณาเพิ่มข้อมูลนัดหมายอย่างน้อย 1 ครั้ง');
+            }
+            saveAppointmentToGoogleSheets(formData);
+        });
+
+        // ***** MODIFIED FUNCTION START *****
+// ให้คัดลอกฟังก์ชันนี้ไปทับของเดิมทั้งหมด
+
+async function saveAppointmentToGoogleSheets(formData) {
+    const submitButton = document.querySelector('#appointmentForm button[type="submit"]');
+    const originalText = submitButton.textContent;
+    submitButton.textContent = 'กำลังบันทึก...';
+    submitButton.disabled = true;
+
+    try {
+        // 🟢 ดึงชื่อผู้ใช้ที่ล็อกอินอยู่จาก sessionStorage
+        // หากไม่มีชื่อ ให้ใช้ Role แทน (เช่น 'แอดมิน')
+        const loggedInUserName = sessionStorage.getItem('userName') || sessionStorage.getItem('userRole');
+
+        const appointments = formData.appointments.map(appointment => ({
+            timestamp: new Date().toLocaleString('th-TH'),
+            nationalId: formData.nationalId,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            appointmentDate: formatThaiDate(appointment.date),
+            vaccine: appointment.vaccine,
+            dosage: appointment.dosage, 
+            injectionSite: appointment.injectionSite, 
+            status: 'รอฉีด', // 🟢 เปลี่ยนสถานะเริ่มต้นเป็น 'รอฉีด'
+            createdBy: loggedInUserName // 🟢 ส่งชื่อผู้ที่ล็อกอินอยู่ไปด้วย
+        }));
+
+        for (const appointment of appointments) {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'saveAppointment', data: appointment })
+            });
+        }
+        
+        alert(`✅ บันทึกนัดหมายเรียบร้อยแล้ว!`);
+        printCurrentAppointmentCard(); 
+
+        document.getElementById('appointmentForm').reset();
+        appointmentDatesArray = [];
+        updateAppointmentDatesDisplay();
+
+    } catch (error) {
+        console.error('Error saving appointment:', error);
+        alert('⚠️ เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+    } finally {
+        submitButton.textContent = originalText;
+        submitButton.disabled = false;
+    }
+}
+
+// ***** MODIFIED FUNCTION END *****
+
+        // =================================================================
+        // HELPER & UTILITY FUNCTIONS
+        // =================================================================
+        function printCurrentAppointmentCard() {
+            const formData = {
+                nationalId: document.getElementById('appointmentNationalId').value,
+                phone: document.getElementById('appointmentPhone').value,
+                firstName: document.getElementById('appointmentFirstName').value,
+                lastName: document.getElementById('appointmentLastName').value,
+                appointments: appointmentDatesArray
+            };
+
+            if (!formData.firstName || !formData.lastName || !formData.nationalId || formData.appointments.length === 0) {
+                return alert('กรุณากรอกข้อมูลผู้ป่วยและเพิ่มรายการนัดหมายก่อนพิมพ์');
+            }
+            printAppointmentCard(formData);
+        }
+
+        function printAppointmentCard(formData) {
+            const printContainer = document.getElementById('print-container');
+            
+            let appointmentRows = '';
+            formData.appointments.forEach(app => {
+                appointmentRows += `
+                    <tr class="border-b">
+                        <td class="py-2 px-4 text-left">${formatThaiDate(app.date)}</td>
+                        <td class="py-2 px-4 text-left">${app.vaccine}</td>
+                        <td class="py-2 px-4 text-left">${app.dosage || '-'}</td>
+                        <td class="py-2 px-4 text-left">${app.injectionSite || '-'}</td>
+                        <td class="py-2 px-4 text-left" style="border-bottom: 1px dotted #999;"></td>
+                    </tr>
+                `;
+            });
+
+            const cardHTML = `
+                <div id="print-card" class="p-0 bg-white flex flex-col h-full text-gray-800 text-base">
+                    <div class="text-center mb-8">
+                        <h1 class="text-2xl font-bold">ใบนัดรับบริการฉีดยา</h1>
+                        <p class="text-lg">คลินิกจิตเวชและยาเสพติด โรงพยาบาลห้วยยอด</p>
+                    </div>
+                    <div class="mb-8">
+                        <h2 class="text-lg font-semibold border-b pb-2 mb-4">ข้อมูลผู้ป่วย</h2>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex">
+                                <span class="font-medium text-gray-600 w-1/3">ชื่อ-นามสกุล:</span>
+                                <span class="font-bold">${formData.firstName} ${formData.lastName}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="font-medium text-gray-600 w-1/3">เลขบัตรประชาชน:</span>
+                                <span class="font-bold">${formData.nationalId}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="font-medium text-gray-600 w-1/3">เบอร์โทรศัพท์:</span>
+                                <span class="font-bold">${formData.phone || 'ไม่มีข้อมูล'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold border-b pb-2 mb-4">รายการนัดหมาย</h2>
+                        <table class="w-full text-left border-collapse text-sm">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="py-2 px-4 font-semibold text-left">วันที่นัด</th>
+                                    <th class="py-2 px-4 font-semibold text-left">วัคซีน</th>
+                                    <th class="py-2 px-4 font-semibold text-left">ขนาดยา</th>
+                                    <th class="py-2 px-4 font-semibold text-left">ตำแหน่งฉีด</th>
+                                    <th class="py-2 px-4 font-semibold text-left">ลายมือชื่อ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${appointmentRows}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Signature Block -->
+                    <div class="mt-auto pt-16 flex justify-end text-sm">
+                        <div class="text-center"> 
+                        
+                            <p class="mb-4">....................................................</p>
+                            <p>(....................................................)</p>
+                            <p>ผู้บันทึก/เจ้าหน้าที่</p>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 text-center text-xs text-gray-500">
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <p>กรุณามาตามวันและเวลาที่นัดหมาย และนำใบนัดนี้พร้อมบัตรประชาชนมาด้วยทุกครั้ง</p>
+                        <p>พิมพ์ ณ วันที่: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    </div>
+                </div>
+            `;
+
+            printContainer.innerHTML = cardHTML;
+            
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+
+        function addVaccineDate() {
+    const date = document.getElementById('vaccineDate').value;
+    const vaccine = document.getElementById('vaccineName').value;
+    const dosage = document.getElementById('vaccineDosage').value;
+    const site = document.getElementById('injectionSite').value;
+    const recorder = document.getElementById('vaccineRecorder').value; // 🟢 เพิ่มบรรทัดนี้
+
+    if (date && vaccine && dosage && site && recorder) { // 🟢 เพิ่ม recorder ในเงื่อนไข
+        vaccineDatesArray.push({ date, vaccine, dosage, site, recorder }); // 🟢 เพิ่ม recorder ใน object
+        updateVaccineDatesDisplay();
+        document.getElementById('vaccineDate').value = '';
+        document.getElementById('vaccineName').value = '';
+        document.getElementById('vaccineDosage').value = '';
+        document.getElementById('injectionSite').value = '';
+        document.getElementById('vaccineRecorder').value = ''; // 🟢 เพิ่มบรรทัดนี้
+    } else {
+        alert('กรุณากรอกข้อมูลการฉีดและชื่อผู้บันทึกให้ครบถ้วน'); // 🟢 ปรับปรุงข้อความแจ้งเตือน
+    }
+}
+
+        function updateVaccineDatesDisplay() {
+    const container = document.getElementById('vaccineDates');
+    container.innerHTML = '';
+    vaccineDatesArray.forEach((data, index) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center space-x-4 p-4 bg-blue-50 rounded-lg border border-blue-200';
+        div.innerHTML = `
+            <div class="flex-1">
+                <p class="font-medium text-blue-800">วันที่ฉีด: ${formatThaiDate(data.date)}</p>
+                <p class="text-sm text-blue-600">ยา: ${data.vaccine} (${data.dosage}, ${data.site}) | ผู้บันทึก: ${data.recorder}</p>
+            </div>
+            <button onclick="removeVaccineDate(${index})" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600">ลบ</button>`;
+        container.appendChild(div);
+    });
+}
+
+        function removeVaccineDate(index) {
+            vaccineDatesArray.splice(index, 1);
+            updateVaccineDatesDisplay();
+        }
+
+        function addSelectedDates() {
+            const vaccine = document.getElementById('appointmentVaccine').value;
+            const dosage = document.getElementById('appointmentDosage').value;
+            const injectionSite = document.getElementById('appointmentInjectionSite').value;
+
+            if (selectedDates.length === 0) return alert('กรุณาเลือกวันที่นัดหมาย');
+            if (!vaccine || !dosage || !injectionSite) return alert('กรุณาเลือกข้อมูลการฉีดให้ครบถ้วน (ยา, ขนาดยา, ตำแหน่ง)');
+            
+            selectedDates.forEach(date => appointmentDatesArray.push({ date, vaccine, dosage, injectionSite }));
+            updateAppointmentDatesDisplay();
+            selectedDates = [];
+            document.getElementById('appointmentVaccine').value = '';
+            document.getElementById('appointmentDosage').value = '';
+            document.getElementById('appointmentInjectionSite').value = '';
+            generateCalendar();
+        }
+
+        function updateAppointmentDatesDisplay() {
+            const container = document.getElementById('appointmentDates');
+            container.innerHTML = '';
+            appointmentDatesArray.forEach((data, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-4 p-4 bg-green-50 rounded-lg border border-green-200';
+                div.innerHTML = `
+                    <div class="flex-1">
+                        <p class="font-medium text-green-800">วันที่นัด: ${formatThaiDate(data.date)}</p>
+                        <p class="text-sm text-green-600">ยา: ${data.vaccine} (${data.dosage}, ${data.injectionSite})</p>
+                    </div>
+                    <button onclick="deleteAppointmentFromSheet(${index})" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600">ลบ</button>`;
+                container.appendChild(div);
+            });
+        }
+
+        async function deleteAppointmentFromSheet(index) {
+            const appointmentToDelete = appointmentDatesArray[index];
+            const nationalId = document.getElementById('appointmentNationalId').value;
+
+            if (!confirm(`คุณต้องการลบนัดหมายวันที่ ${formatThaiDate(appointmentToDelete.date)} ใช่หรือไม่?`)) {
+                return;
+            }
+
+            const deleteButton = event.target;
+            deleteButton.textContent = '...';
+            deleteButton.disabled = true;
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({
+                        action: 'deleteAppointment',
+                        nationalId: nationalId,
+                        appointmentDate: appointmentToDelete.date 
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('ลบนัดหมายเรียบร้อยแล้ว');
+                    appointmentDatesArray.splice(index, 1);
+                    updateAppointmentDatesDisplay();
+                } else {
+                    throw new Error(result.error || 'ไม่สามารถลบข้อมูลได้');
+                }
+            } catch (error) {
+                console.error('Delete Error:', error);
+                alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + error.message);
+                deleteButton.textContent = 'ลบ';
+                deleteButton.disabled = false;
+            }
+        }
+
+        function generateCalendar() {
+            const calendar = document.getElementById('multiDateCalendar');
+            const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+            const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            let calendarHTML = `
+                <div class="p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <button type="button" onclick="previousMonth()" class="p-2 hover:bg-gray-100 rounded-lg">&lt;</button>
+                        <h3 class="text-lg font-semibold">${monthNames[currentMonth]} ${currentYear + 543}</h3>
+                        <button type="button" onclick="nextMonth()" class="p-2 hover:bg-gray-100 rounded-lg">&gt;</button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 mb-2">
+                        ${dayNames.map(day => `<div class="text-center text-sm font-medium text-gray-600 p-2">${day}</div>`).join('')}
+                    </div>
+                    <div class="grid grid-cols-7 gap-1">`;
+            for (let i = 0; i < firstDay.getDay(); i++) { calendarHTML += `<div class="p-2"></div>`; }
+            const today = new Date();
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === day;
+                const isSelected = selectedDates.includes(dateStr);
+                const isPast = new Date(currentYear, currentMonth, day) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                let classes = 'p-2 text-center cursor-pointer rounded-lg transition-colors duration-200 ';
+                if (isPast) classes += 'text-gray-400 cursor-not-allowed ';
+                else if (isSelected) classes += 'bg-blue-600 text-white hover:bg-blue-700 ';
+                else if (isToday) classes += 'bg-blue-100 text-blue-600 hover:bg-blue-200 ';
+                else classes += 'hover:bg-gray-100 ';
+                const onclick = isPast ? '' : `onclick="toggleDate('${dateStr}')"`;
+                calendarHTML += `<div class="${classes}" ${onclick}>${day}</div>`;
+            }
+            calendarHTML += `</div></div>`;
+            calendar.innerHTML = calendarHTML;
+            updateSelectedDatesCount();
+        }
+
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            generateCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            generateCalendar();
+        }
+
+        function toggleDate(dateStr) {
+            const index = selectedDates.indexOf(dateStr);
+            if (index > -1) selectedDates.splice(index, 1);
+            else selectedDates.push(dateStr);
+            generateCalendar();
+        }
+
+        function updateSelectedDatesCount() {
+            document.getElementById('selectedDatesCount').textContent = selectedDates.length;
+        }
+
+        function formatThaiDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return 'วันที่ไม่ถูกต้อง';
+            const year = date.getFullYear();
+            const thaiYear = year > 2500 ? year : year + 543;
+            const thaiMonths = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+            return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${thaiYear}`;
+        }
+         
+        ['appointmentPhone'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 10) value = value.substring(0, 10);
+                if (value.length >= 3 && value.length <= 6) value = value.replace(/(\d{3})(\d+)/, '$1-$2');
+                else if (value.length > 6) value = value.replace(/(\d{3})(\d{3})(\d+)/, '$1-$2-$3');
+                e.target.value = value;
+            });
+        });
+        ['nationalId', 'appointmentNationalId', 'searchId'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '');
+            });
+        });
+   

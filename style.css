@@ -1,0 +1,216 @@
+
+        /* --- Base and Main System Styles --- */
+        body { 
+            font-family: 'Sarabun', sans-serif;
+            transition: background-color 0.5s ease;
+        }
+              
+        .admin-only { display: none; }
+        .admin-only.show { display: block; }
+
+        /* --- New Login Page Styles --- */
+        .login-body {
+            background: linear-gradient(to bottom right, #1e3a8a, #312e81);
+        }
+
+        /* Frosted Card Effect */
+        .frosted-card {
+            background-color: rgba(255, 255, 255, 0.15);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-radius: 1rem; /* rounded-2xl */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Input Field Style */
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem; /* px-4 py-3 */
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(0, 0, 0, 0.2);
+            color: white;
+            transition: all 0.2s ease-in-out;
+        }
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(96, 165, 250, 0.8); /* blue-400 */
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3); /* ring */
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Login Button Style */
+        .login-button {
+            width: 100%;
+            background-color: #3b82f6; /* bg-blue-600 */
+            color: white;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 500; /* font-medium */
+            transition: all 0.2s ease-in-out;
+            transform: scale(1);
+        }
+        .login-button:hover {
+            background-color: #2563eb; /* bg-blue-700 */
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .login-button:active {
+            transform: scale(0.98);
+        }
+
+        /* --- Animation Keyframes --- */
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-slow {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 0.6s ease-out forwards;
+            opacity: 0; /* Start hidden */
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 4s infinite ease-in-out;
+        }
+
+        /* --- Animated Background --- */
+        #background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: move-bubble 15s infinite ease-in-out alternate;
+        }
+
+        @keyframes move-bubble {
+            from {
+                transform: translateY(0) rotate(0deg);
+            }
+            to {
+                transform: translateY(-120vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .bubble:nth-child(1) { width: 80px; height: 80px; left: 10%; animation-duration: 25s; }
+        .bubble:nth-child(2) { width: 20px; height: 20px; left: 20%; animation-duration: 12s; animation-delay: 2s; }
+        .bubble:nth-child(3) { width: 50px; height: 50px; left: 35%; animation-duration: 18s; animation-delay: 4s; }
+        .bubble:nth-child(4) { width: 100px; height: 100px; left: 50%; animation-duration: 22s; animation-delay: 0s; }
+        .bubble:nth-child(5) { width: 35px; height: 35px; left: 55%; animation-duration: 16s; animation-delay: 1s; }
+        .bubble:nth-child(6) { width: 45px; height: 45px; left: 65%; animation-duration: 20s; animation-delay: 3s; }
+        .bubble:nth-child(7) { width: 90px; height: 90px; left: 75%; animation-duration: 28s; animation-delay: 2s; }
+        .bubble:nth-child(8) { width: 25px; height: 25px; left: 80%; animation-duration: 14s; animation-delay: 5s; }
+        .bubble:nth-child(9) { width: 15px; height: 15px; left: 90%; animation-duration: 11s; animation-delay: 0s; }
+        .bubble:nth-child(10) { width: 60px; height: 60px; left: 25%; animation-duration: 19s; animation-delay: 6s; }
+
+        /* --- Print Styles --- */
+      /* --- Print Styles --- */
+/* --- Print Styles --- */
+/* --- Print Styles --- */
+@media print {
+    /* ซ่อนเนื้อหาหลักของเว็บทั้งหมด */
+    #mainSystem, #loginPage, #background-animation {
+        display: none;
+    }
+
+    /* บังคับให้ print-container แสดงผล */
+    #print-container {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    /* กำหนดขนาดกระดาษพิมพ์ */
+    @page {
+        size: A5 portrait;
+        margin: 5mm; /* เพิ่ม margin เล็กน้อยเผื่อขอบเครื่องพิมพ์ */
+    }
+
+    /* กำหนดให้ใบนัดมีขนาดเต็มหน้ากระดาษ A5 พอดี และลดขนาดฟ้อนต์เริ่มต้น */
+    #print-card {
+        width: 148mm;
+        height: 210mm;
+        padding: 8mm; /* ปรับ padding ให้เล็กลงตามขนาดฟ้อนต์ */
+        box-sizing: border-box;
+        border: none;
+        margin: 0 auto;
+        page-break-after: always;
+        font-size: 10pt; /* ลดขนาดฟ้อนต์เริ่มต้น */
+    }
+
+    #print-card .text-center h1 {
+        font-size: 18pt; /* ลดขนาดหัวข้อหลัก */
+        margin-bottom: 6px;
+    }
+
+    #print-card .text-center p {
+        font-size: 11pt; /* ลดขนาดข้อความใต้หัวข้อหลัก */
+    }
+
+    #print-card .mb-8 h2 {
+        font-size: 12pt; /* ลดขนาดหัวข้อรอง */
+        margin-bottom: 4px;
+        padding-bottom: 2px;
+    }
+
+    #print-card .space-y-2.text-sm div {
+        font-size: 10pt; /* ลดขนาดข้อมูลผู้ป่วย */
+    }
+
+    #print-card .font-bold {
+        font-size: 10pt; /* ลดขนาดตัวหนาในข้อมูลผู้ป่วย */
+    }
+
+    #print-card table {
+        font-size: 10pt; /* ลดขนาดตัวอักษรในตาราง */
+    }
+
+    #print-card th, #print-card td {
+        padding: 6px 8px; /* ปรับ padding ในตารางให้เล็กลง */
+    }
+
+    #print-card .mt-auto.pt-16.flex.justify-end.text-sm div {
+        font-size: 8pt; /* ลดขนาดส่วนท้าย */
+    }
+
+    #print-card .pt-4.text-center.text-xs.text-gray-500 p {
+        font-size: 9pt; /* ลดขนาดข้อความส่วนล่างสุด */
+        margin-top: 1px;
+        margin-bottom: 1px;
+    }
+}
