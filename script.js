@@ -123,7 +123,7 @@ function initializeTabContent() {
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">ตำแหน่งฉีด</label>
-                        <input type="text" id="appointmentInjectionSite" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="เช่น แขนซ้าย">
+                        <input type="text" id="appointmentInjectionSite" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" >
                     </div>
                 </div>
                 <div class="flex justify-center">
@@ -179,6 +179,9 @@ function initializeTabContent() {
                         <option value="รพ.สต.วังคีรี">รพ.สต.วังคีรี</option>
                         <option value="รพ.สต.หนองช้างแล่น">รพ.สต.หนองช้างแล่น</option>
                         <option value="รพ.สต.ห้วยนาง">รพ.สต.ห้วยนาง</option>
+                        <option value="รพ.สต.ห้วยนาง">PCU ห้วยยอด</option>
+                        <option value="รพ.สต.ห้วยนาง">เทศบาลตำบลห้วยยอด</option>
+                        <option value="รพ.สต.ห้วยนาง">เทศบาลตำบลนาวง</option>
                     </select>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -206,7 +209,7 @@ function initializeTabContent() {
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">ตำแหน่งฉีด</label>
-                        <input type="text" id="injectionSite" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="เช่น แขนซ้าย">
+                        <input type="text" id="injectionSite" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้บันทึก</label>
@@ -761,6 +764,7 @@ function printAppointmentCard(formData) {
 
         <div class="pt-4 text-center text-xs text-gray-500">
             <p>กรุณามาตามวันและเวลาที่นัดหมาย และนำใบนัดนี้พร้อมบัตรประชาชนมาด้วยทุกครั้ง</p>
+            <p>หากมีข้อสงสัย สามารถโทรสอบถามได้ที่ 075-272396 หรือ 075-271049 ต่อ 102</p>
             <p>พิมพ์ ณ วันที่: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
     </div>
@@ -980,3 +984,4 @@ function formatThaiDate(dateStr) {
         });
     }
 });
+
