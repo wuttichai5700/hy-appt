@@ -705,11 +705,11 @@ function printAppointmentCard(formData) {
         `;
     });
 
-  const cardHTML = `
+   const cardHTML = `
     <div id="print-card" class="p-0 bg-white flex flex-col h-full text-gray-800 text-base">
         <div class="flex justify-between items-center mb-4">
             <div>
-                <img src="logo.png" alt="โลโก้โรงพยาบาล" style="height: 80px;">
+                <img src="https://i.postimg.cc/50Y8RqkF/logo.png" alt="โลโก้โรงพยาบาล" style="height: 80px;">
             </div>
             <div class="text-center">
                 <h1 class="text-2xl font-bold">ใบนัดรับบริการฉีดยา</h1>
@@ -980,4 +980,3 @@ function formatThaiDate(dateStr) {
         });
     }
 });
-
