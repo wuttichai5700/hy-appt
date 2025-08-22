@@ -705,62 +705,66 @@ function printAppointmentCard(formData) {
         `;
     });
 
-    const cardHTML = `
-        <div id="print-card" class="p-0 bg-white flex flex-col h-full text-gray-800 text-base">
-            <div class="text-center mb-8">
+  const cardHTML = `
+    <div id="print-card" class="p-0 bg-white flex flex-col h-full text-gray-800 text-base">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <img src="logo.png" alt="โลโก้โรงพยาบาล" style="height: 80px;">
+            </div>
+            <div class="text-center">
                 <h1 class="text-2xl font-bold">ใบนัดรับบริการฉีดยา</h1>
                 <p class="text-lg">คลินิกจิตเวชและยาเสพติด โรงพยาบาลห้วยยอด</p>
             </div>
-            <div class="mb-8">
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4">ข้อมูลผู้ป่วย</h2>
-                <div class="space-y-2 text-sm">
-                    <div class="flex">
-                        <span class="font-medium text-gray-600 w-1/3">ชื่อ-นามสกุล:</span>
-                        <span class="font-bold">${formData.firstName} ${formData.lastName}</span>
-                    </div>
-                    <div class="flex">
-                        <span class="font-medium text-gray-600 w-1/3">เลขบัตรประชาชน:</span>
-                        <span class="font-bold">${formData.nationalId}</span>
-                    </div>
-                    <div class="flex">
-                        <span class="font-medium text-gray-600 w-1/3">เบอร์โทรศัพท์:</span>
-                        <span class="font-bold">${formData.phone || 'ไม่มีข้อมูล'}</span>
-                    </div>
+            <div></div> </div>
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold border-b pb-2 mb-4">ข้อมูลผู้ป่วย</h2>
+            <div class="space-y-2 text-sm">
+                <div class="flex">
+                    <span class="font-medium text-gray-600 w-1/3">ชื่อ-นามสกุล:</span>
+                    <span class="font-bold">${formData.firstName} ${formData.lastName}</span>
                 </div>
-            </div>
-            <div>
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4">รายการนัดหมาย</h2>
-                <table class="w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="bg-gray-100">
-                            <th class="py-2 px-4 font-semibold text-left">วันที่นัด</th>
-                            <th class="py-2 px-4 font-semibold text-left">ชื่อยา</th>
-                            <th class="py-2 px-4 font-semibold text-left">ขนาดยา</th>
-                            <th class="py-2 px-4 font-semibold text-left">ตำแหน่งฉีด</th>
-                            <th class="py-2 px-4 font-semibold text-left">ลายมือชื่อ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${appointmentRows}
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="mt-auto pt-16 flex justify-end text-sm">
-                <div class="text-center">
-                    <p class="mb-4">....................................................</p>
-                    <p>(....................................................)</p>
-                    <p>ผู้บันทึก/เจ้าหน้าที่</p>
+                <div class="flex">
+                    <span class="font-medium text-gray-600 w-1/3">เลขบัตรประชาชน:</span>
+                    <span class="font-bold">${formData.nationalId}</span>
                 </div>
-            </div>
-
-            <div class="pt-4 text-center text-xs text-gray-500">
-                <p>กรุณามาตามวันและเวลาที่นัดหมาย และนำใบนัดนี้พร้อมบัตรประชาชนมาด้วยทุกครั้ง</p>
-                <p>หากมีข้อสงสัย สามารถโทรสอบถามได้ที่ 075-272396 หรือ 075-271049 ต่อ 102</p>
-                <p>พิมพ์ ณ วันที่: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div class="flex">
+                    <span class="font-medium text-gray-600 w-1/3">เบอร์โทรศัพท์:</span>
+                    <span class="font-bold">${formData.phone || 'ไม่มีข้อมูล'}</span>
+                </div>
             </div>
         </div>
-    `;
+        <div>
+            <h2 class="text-lg font-semibold border-b pb-2 mb-4">รายการนัดหมาย</h2>
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="py-2 px-4 font-semibold text-left">วันที่นัด</th>
+                        <th class="py-2 px-4 font-semibold text-left">ชื่อยา</th>
+                        <th class="py-2 px-4 font-semibold text-left">ขนาดยา</th>
+                        <th class="py-2 px-4 font-semibold text-left">ตำแหน่งฉีด</th>
+                        <th class="py-2 px-4 font-semibold text-left">ลายมือชื่อ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${appointmentRows}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-auto pt-16 flex justify-end text-sm">
+            <div class="text-center">
+                <p class="mb-4">....................................................</p>
+                <p>(....................................................)</p>
+                <p>ผู้บันทึก/เจ้าหน้าที่</p>
+            </div>
+        </div>
+
+        <div class="pt-4 text-center text-xs text-gray-500">
+            <p>กรุณามาตามวันและเวลาที่นัดหมาย และนำใบนัดนี้พร้อมบัตรประชาชนมาด้วยทุกครั้ง</p>
+            <p>พิมพ์ ณ วันที่: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        </div>
+    </div>
+`;
 
     printContainer.innerHTML = cardHTML;
     
@@ -976,3 +980,4 @@ function formatThaiDate(dateStr) {
         });
     }
 });
+
