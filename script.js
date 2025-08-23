@@ -1,7 +1,7 @@
 // =================================================================
 // SCRIPT CONFIGURATION
 // =================================================================
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2m91xD4NHTEcqr-2G_CQ8FpmZ-_DcD6ZrWPONE_GbquonoK4za6_kbAsxSlaeClQZ/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_bx_QrHVGDYogM7ed3XCh_3MrpIKY4ReY39jBeVXaWK4RVECSDmdsPhhWIYyltQTP/exec';
 let currentUserRole = '';
 let vaccineDatesArray = [];
 let appointmentDatesArray = [];
@@ -16,10 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const loggedInUserRole = sessionStorage.getItem('userRole');
     const loggedInUserName = sessionStorage.getItem('userName');
     
-    // 🟢 1. สั่งให้สร้างเนื้อหาของทุกแท็บให้เสร็จก่อนเป็นอันดับแรก
+    // 1. สร้างเนื้อหาของทุกแท็บให้เสร็จก่อน
     initializeTabContent();
 
-    // 🟢 2. จากนั้นค่อยตรวจสอบการล็อกอินและแสดงผลระบบ
+    // 2. จากนั้นค่อยตรวจสอบการล็อกอินและแสดงผลระบบ
     if (loggedInUserRole) {
         showMainSystem(loggedInUserRole, loggedInUserName); 
     } else {
@@ -28,6 +28,31 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('background-animation').classList.remove('hidden');
     }
 });
+
+function showMainSystem(role, name) {
+    document.body.className = 'bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen';
+    
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('background-animation').classList.add('hidden');
+    
+    document.getElementById('mainSystem').classList.remove('hidden');
+    
+    currentUserRole = role;
+    
+    let userDisplay = role;
+    if (name) {
+        userDisplay = `${role}: ${name}`;
+    }
+    document.getElementById('userRole').textContent = userDisplay;
+
+    document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('show'));
+    if (role === 'แอดมิน') {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('show'));
+    }
+    updateCurrentDate();
+    generateCalendar(); // ฟังก์ชันนี้จะหาที่วางปฏิทินเจอแล้ว
+    showTab('search');
+}
 
 function initializeTabContent() {
     document.getElementById('searchContent').innerHTML = `
@@ -130,6 +155,12 @@ function initializeTabContent() {
                     <button type="button" onclick="addSelectedDates()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-200">เพิ่มวันที่ที่เลือก</button>
                 </div>
                 <div id="appointmentDates" class="space-y-3"></div>
+                <div id="deleteAllBtnContainer" class="flex justify-end hidden">
+                    <button type="button" onclick="deleteAllAppointments()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200 text-sm">
+                        ลบนัดหมายทั้งหมด
+                    </button>
+                </div>
+                
                 <div class="flex space-x-4">
                     <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200">บันทึกนัดหมาย</button>
                     <button type="button" onclick="printCurrentAppointmentCard()" class="w-full bg-gray-500 text-white py-3 rounded-lg font-medium hover:bg-gray-600 transition duration-200">พิมพ์ใบนัด</button>
@@ -137,6 +168,9 @@ function initializeTabContent() {
             </form>
         </div>
     `;
+
+
+    
 
     document.getElementById('registerContent').innerHTML = `
         <div class="bg-white rounded-xl shadow-lg p-6">
@@ -235,6 +269,84 @@ function initializeTabContent() {
     `;
     
     addEventListeners();
+}
+
+async function deleteAllAppointments() {
+    const nationalId = document.getElementById('appointmentNationalId').value;
+    if (!nationalId) {
+        return alert('กรุณากรอกเลขบัตรประชาชนก่อน');
+    }
+
+    if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบนัดหมายทั้งหมดของเลขบัตร ${nationalId}? การกระทำนี้ไม่สามารถย้อนกลับได้`)) {
+        return;
+    }
+
+    // แสดงสถานะกำลังลบ
+    const deleteAllBtn = document.querySelector('#deleteAllBtnContainer button');
+    deleteAllBtn.textContent = 'กำลังลบ...';
+    deleteAllBtn.disabled = true;
+
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                action: 'deleteAllAppointmentsForPatient',
+                nationalId: nationalId
+            })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert('ลบนัดหมายทั้งหมดเรียบร้อยแล้ว');
+            appointmentDatesArray = [];
+            updateAppointmentDatesDisplay(); // อัปเดตหน้าจอให้แสดงผลว่าไม่มีนัดหมาย
+        } else {
+            throw new Error(result.error || 'ไม่สามารถลบข้อมูลได้');
+        }
+    } catch (error) {
+        console.error('Delete All Error:', error);
+        alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + error.message);
+    } finally {
+        // คืนค่าปุ่มให้เป็นปกติ
+        deleteAllBtn.textContent = 'ลบนัดหมายทั้งหมด';
+        deleteAllBtn.disabled = false;
+    }
+}
+
+function setupPasswordToggle() {
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    if (!togglePassword || !passwordInput) return;
+
+    const eyeIcon = `
+        <svg class="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+        </svg>`;
+    
+    const eyeSlashIcon = `
+        <svg class="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 .847 0 1.67.111 2.458.311M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18"></path>
+        </svg>`;
+
+    // ใส่ไอคอนดวงตาเริ่มต้น
+    togglePassword.innerHTML = eyeIcon;
+
+    togglePassword.addEventListener('click', function() {
+        // เปลี่ยน type ของ input ระหว่าง 'password' กับ 'text'
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+
+        // เปลี่ยนไอคอนตาม type ของ input
+        if (type === 'password') {
+            this.innerHTML = eyeIcon;
+        } else {
+            this.innerHTML = eyeSlashIcon;
+        }
+    });
 }
 
 function updateCurrentDate() {
@@ -837,7 +949,16 @@ function addSelectedDates() {
 
 function updateAppointmentDatesDisplay() {
     const container = document.getElementById('appointmentDates');
+    const deleteAllBtnContainer = document.getElementById('deleteAllBtnContainer');
     container.innerHTML = '';
+    
+    // 🟢 ตรวจสอบว่ามีนัดหมายหรือไม่
+    if (appointmentDatesArray.length > 0) {
+        deleteAllBtnContainer.classList.remove('hidden'); // แสดงปุ่ม
+    } else {
+        deleteAllBtnContainer.classList.add('hidden'); // ซ่อนปุ่ม
+    }
+
     appointmentDatesArray.forEach((data, index) => {
         const div = document.createElement('div');
         div.className = 'flex items-center space-x-4 p-4 bg-green-50 rounded-lg border border-green-200';
