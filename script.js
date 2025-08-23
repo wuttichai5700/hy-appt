@@ -15,11 +15,9 @@ let currentYear = new Date().getFullYear();
 document.addEventListener('DOMContentLoaded', function() {
     const loggedInUserRole = sessionStorage.getItem('userRole');
     const loggedInUserName = sessionStorage.getItem('userName');
-    
-    // 1. สร้างเนื้อหาของทุกแท็บให้เสร็จก่อน
-    initializeTabContent();
 
-    // 2. จากนั้นค่อยตรวจสอบการล็อกอินและแสดงผลระบบ
+    setupPasswordToggle();
+
     if (loggedInUserRole) {
         showMainSystem(loggedInUserRole, loggedInUserName); 
     } else {
@@ -27,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('loginPage').classList.remove('hidden');
         document.getElementById('background-animation').classList.remove('hidden');
     }
+    initializeTabContent();
 });
 
 function showMainSystem(role, name) {
