@@ -245,8 +245,8 @@ function initializeTabContent() {
                         <input type="text" id="injectionSite" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้บันทึก</label>
-                        <input type="text" id="vaccineRecorder" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="ชื่อผู้บันทึก">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้ฉีดยา</label>
+                        <input type="text" id="vaccineRecorder" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="ชื่อผู้ฉีดยา">
                     </div>
                 </div>
                 <div class="flex justify-center">
@@ -904,7 +904,7 @@ function addVaccineDate() {
         document.getElementById('injectionSite').value = '';
         document.getElementById('vaccineRecorder').value = '';
     } else {
-        alert('กรุณากรอกข้อมูลการฉีดและชื่อผู้บันทึกให้ครบถ้วน');
+        alert('กรุณากรอกข้อมูลการฉีดและชื่อผู้ฉีดยาให้ครบถ้วน');
     }
 }
 
@@ -1104,4 +1104,5 @@ function formatThaiDate(dateStr) {
         });
     }
 });
+
 
