@@ -856,6 +856,7 @@ function printAppointmentCard(formData) {
                         <th class="py-2 px-4 font-semibold text-left">ชื่อยา</th>
                         <th class="py-2 px-4 font-semibold text-left">ขนาดยา</th>
                         <th class="py-2 px-4 font-semibold text-left">ตำแหน่งฉีด</th>
+                        <th class="py-2 px-4 font-semibold text-left">วันที่ฉีด</th>
                         <th class="py-2 px-4 font-semibold text-left">ลายมือชื่อ</th>
                     </tr>
                 </thead>
@@ -1104,5 +1105,6 @@ function formatThaiDate(dateStr) {
         });
     }
 });
+
 
 
