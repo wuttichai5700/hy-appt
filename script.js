@@ -852,12 +852,12 @@ function printAppointmentCard(formData) {
             <table class="w-full text-left border-collapse text-sm">
                 <thead>
                     <tr class="bg-gray-100">
-                        <th class="py-2 px-4 font-semibold text-left">วันที่นัด</th>
-                        <th class="py-2 px-4 font-semibold text-left">ชื่อยา</th>
-                        <th class="py-2 px-4 font-semibold text-left">ขนาดยา</th>
-                        <th class="py-2 px-4 font-semibold text-left">ตำแหน่งฉีด</th>
-                        <th class="py-2 px-4 font-semibold text-left">วันที่ฉีด</th>
-                        <th class="py-2 px-4 font-semibold text-left">ลายมือชื่อ</th>
+                        <th class="py-2 px-3 font-semibold text-left">วันที่นัด</th>
+                        <th class="py-2 px-3 font-semibold text-left">ชื่อยา</th>
+                        <th class="py-2 px-3 font-semibold text-left">ขนาดยา</th>
+                        <th class="py-2 px-3 font-semibold text-left">ตำแหน่งฉีด</th>
+                        <th class="py-2 px-3 font-semibold text-left">วันที่ฉีด</th>
+                        <th class="py-2 px-3 font-semibold text-left">ลายมือชื่อ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1105,6 +1105,7 @@ function formatThaiDate(dateStr) {
         });
     }
 });
+
 
 
 
