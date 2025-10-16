@@ -174,12 +174,12 @@
     }
 
     #print-card .text-center h1 {
-        font-size: 18pt; /* ลดขนาดหัวข้อหลัก */
+        font-size: 14pt; /* ลดขนาดหัวข้อหลัก */
         margin-bottom: 6px;
     }
 
     #print-card .text-center p {
-        font-size: 8pt; /* ลดขนาดข้อความใต้หัวข้อหลัก */
+        font-size: 10pt; /* ลดขนาดข้อความใต้หัวข้อหลัก */
     }
 
     #print-card .mb-8 h2 {
@@ -214,4 +214,5 @@
         margin-bottom: 1px;
     }
 }
+
 
