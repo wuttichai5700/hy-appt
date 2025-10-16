@@ -179,11 +179,11 @@
     }
 
     #print-card .text-center p {
-        font-size: 11pt; /* ลดขนาดข้อความใต้หัวข้อหลัก */
+        font-size: 8pt; /* ลดขนาดข้อความใต้หัวข้อหลัก */
     }
 
     #print-card .mb-8 h2 {
-        font-size: 12pt; /* ลดขนาดหัวข้อรอง */
+        font-size: 10pt; /* ลดขนาดหัวข้อรอง */
         margin-bottom: 4px;
         padding-bottom: 2px;
     }
@@ -214,3 +214,4 @@
         margin-bottom: 1px;
     }
 }
+
